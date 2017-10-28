@@ -27,7 +27,7 @@
     <link href="<?php echo CALENDAR_PATH; ?>calendar/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
 
     <!-- Fonts -->
-    <link href='<?php echo CALENDAR_PATH; ?>calendar/css/raleway.css' rel='stylesheet' type='text/css'>
+    <link href='<?php echo CALENDAR_PATH; ?>calendar/fonts/raleway.css' rel='stylesheet' type='text/css'>
 
     <!-- Ace Code Editor - https://ace.c9.io/ -->
     <script type="text/javascript"
