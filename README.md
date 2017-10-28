@@ -7,3 +7,5 @@ Since the system uses other git repos as submodules, you will want to clone via:
 ```
 git clone --recursive https://github.com/jskenney/calendar-core.git
 ```
+
+# See the calendar repo for additional information
