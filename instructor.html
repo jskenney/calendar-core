@@ -1,0 +1,390 @@
+
+<a name="calendarlink"></a>
+<h3>Calendar Version 4</h3>
+<p>
+  Welcome to Version 4 of the auto generating calender scripts.  This version was a
+  complete update to standardize on the bootstrap and skeleton css libraries, and
+  continues with the return-to-basics mentality of version 3, but with
+  significant improvements provided by the move to PHP.  This version includes:
+  <b>protected directory structures</b>, <b>site specific CSS</b>,
+  <b>date based file unlocking for students</b>, and a <b>highly configurable box design.</b>
+  Additionally the number of configuration files has been reduced considerably.
+</p>
+<p>
+  Once you log onto the system, you can view the calendar unfettered and see all files
+  in each of the class directories.  You can click on individual dates in the calendar
+  and see all of the files that are hidden in those directories (under the name of the lecture).
+  Depending on how you
+  configure security, hopefully properly configured .htaccess files, this may be the
+  only way to view these files via the web.
+</p>
+<h4>Calendar Configuration Files:</h4>
+<p>
+  <ul>
+    <li>
+      <b><a href=calendar.php>calendar.php</a></b> - Primary Configuration file for the calendar.
+    </li>
+    <li>
+      <b><replace value="access_file"></replace></b> - File used to define when files or events become visible.
+    </li>
+    <li>
+      <b><replace value="class_file"></replace></b> - File used to virtually copy files into classes, labs, etc.
+    </li>
+
+  </ul>
+
+</p>
+
+<a name="structure"></a>
+<h4>Directory Structure:</h4>
+<p>
+  The calendar expects a directory structure where all specific types of classes
+  are in their own directory.  For example, classes in one directory,
+  labs in another, review sessions in another, etc.
+  The contents of these directories must be in alphabetical order as that is
+  how the order of classes is determined.
+  <pre><code class="makefile">class/
+class/01.Introduction to this course
+class/02.The first class
+class/02.The first class/notes.txt
+lab/
+lab/01.The first lab</code></pre>
+  Directory Names, and expected file names are configured and specified in the configuration file
+  (<a href=calendar.php>calendar.php</a>).
+</p>
+
+<h4>HTML</h4>
+<p>
+  The calendar system will present processed HTML files to your users
+  in a way that will hopefully save you time in producing content.
+  The default CSS for presented pages is the <b>skeleton boilerplate CSS</b> provided
+  at <a href="http://getskeleton.com">getskeleton.com</a> used in conjunction with
+  the bootstrap CSS libraries <a href="http://getbootstrap.com">getbootstrap.com</a>,
+  the floating topbar will be automatically generated for you (see notes below),
+  and all of the options listed on that page are available in your webpage design.
+  All of the headers and CSS will be automatically generated for you allowing you to
+  start with simple HTML.
+</p>
+
+<h4>LaTex and Formulas</h4>
+<p>
+  The <b>MathJax</b> library is included by default, and will allow you
+  to embed laTex, which is very useful for formulas, example:
+  $$
+  P^i_t = P_0 + V^i_0t + \frac{1}{2}at^2
+  $$
+  To use this feature, simply surround the latex code with \$\$
+  as noted below in the next section.
+</p>
+<p>
+  We can also embed formulas inline with the text, \( a = 47 t \),
+  by escaping parenthesis, see example code below:
+</p>
+
+<h4>Embedding Source Code</h4>
+<p>
+  If you want to show users code, the <b>hightlight.js</b> library is included.
+  All you need to do is place the source-code between a
+  <b>&lt;pre&gt;</b> and <b>&lt;code&gt;</b> tags.  The library will
+  attempt to guess the language that you are using, although this
+  can be overriden (see example in the source to this page).
+</p>
+
+<pre><code class="html">&lt;pre&gt;&lt;code class="tex"&gt;$$
+  P^i_t = P_0 + V^i_0t + \frac{1}{2}at^2
+$$
+
+\( a = 47 t \)&lt;/code&gt;&lt;/pre&gt;</code></pre>
+<p>
+This results in:
+</p>
+<pre><code class="tex">$$
+P^i_t = P_0 + V^i_0t + \frac{1}{2}at^2
+$$
+
+\( a = 47 t \)</code></pre>
+
+
+<a name="images"></a>
+<h4>HTML &amp; Images</h4>
+<p>
+  HTML files are automatically processed and image names are replaced with the
+  appropriately protected links.  To support this the calendar system expects
+  that the image filename will always be the first element of the tag, example:
+</p>
+<pre><code class="html">&lt;img src="picture.jpg" width="50%"&gt;</code></pre>
+<p>
+  The image files must be located in the <b>same</b> directory as the html,
+  deeper directory structures are only possible using links
+  (which may not be protected and therefore is not recommended).
+</p>
+
+<a name="links"></a>
+<h4>HTML &amp; Links</h4>
+<p>
+  Similarly to the way that images are handled, you can link to other files that
+  within the <b>course</b> directory.  The format of the tag must start with
+  <b>&lt;a href="</b> for the system to properly identify it as a servable link, example:
+</p>
+<pre><code class="html">&lt;a href="additional.html" id="ifyouwantone" ... &gt;</code></pre>
+
+<a name="menus"></a>
+<h4>HTML &amp; Automatic Menubar Generation</h4>
+<p>
+  HTML files will be searched for the <b> &lt;a name=""&gt; </b> tags, and this data
+  will be used to build a menubar at the top of the prepared HTML.  If you
+  use <b>:</b> (Semicolons), then you can create dynamic menus with subcategories
+  that link to specific portions on your page.  As an example, if the following was
+  in an HTML file:
+</p>
+<pre><code class="html">&lt;a name="Intro" id="Intro"&gt;&lt;/a&gt;
+Welcome to the class ...
+&lt;a name="Notes" id="One"&gt;&lt;/a&gt;
+...
+&lt;a name="Problems" id="Problems"&gt;&lt;/a&gt;</code></pre>
+<p>
+  <b>Note: No spaces in links!</b>  If you want to use spaces in your names,
+  replace them with a <b>-</b> instead, the system will automatically replace
+  them for you on the top bar.  Example:
+</p>
+<pre><code class="html">&lt;a name="Intro-to-CS" id="Intro-to-CS"&gt;&lt;/a&gt;</code></pre>
+<p>
+  If you are having issues getting the locations to line up correctly,
+  you can surround each area with it's own <b>&lt;div&gt;</b> class, example:
+  <pre><code class="html">&lt;a name="tables"&gt;&lt;/a&gt;
+&lt;div class="docs-section" id="tables"&gt;
+...
+&lt;/div&gt;</code></pre>
+</p>
+
+<a name="timelock"></a>
+<h4>Setting files to be available on a certain date: <b>(legacy)</b></h4>
+<p>
+  Unless you are logged on, the system will automatically check the naming of
+  all files to see if they are available to students.  This is particularly
+  useful when you use symbolic linking, with an expected filename linked to
+  specifically named file:
+</p>
+<pre><code class="html">Unlocked file: <b>my_powerpoint.ppt</b></code></pre>
+<p>
+  To make this file become available on <b>December 15th</b> rename the file
+  to have the following convention:
+</p>
+<pre><code class="html">Locked file: <b>my_powerpoint.12.15.pptx</b></code></pre>
+<p>
+  Assuming that you have configured <a href=calendar.php>calendar.php</a> so that
+  slides.pptx is set to present as a clickable day title (default), if it finds a
+  slides.pptx file it will present it to the user.  If that file is linked to a
+  date restricted file, it will not be available until that date.  Reminder: To
+  make a symbolic link on linux, using the example names above:
+</p>
+<pre><code class="html">user@workstation$ <b>ln -s my_powerpoint.12.15.pptx slides.pptx</b></code></pre>
+
+<h4>Setting files to be available on a certain date <b>(a better way)</b>:</h4>
+<p>
+  There is also the option of using a consolidated access file for time based opening.
+  The file, which is named in the variable <b>$ACCESS_FILE</b> in <a href=calendar.php>calendar.php</a>
+  (currently <replace value="access_file">),
+  can be used as a
+  central location for setting these accesses.  The format is simply <b>filename</b>,
+  <b>Month</b>, and <b>Day</b> each separated by a tab.  Below is an example file.
+</p>
+<pre><code class="html">homework01.html	12	15
+class/01.Course Overview/intro.html	12	15</code></pre>
+<p>
+  You can set either the complete path, or just a filename.  <b>Note:</b> if you
+  use just a filename, it will catch all instances throughout the directory structure.
+  In the case above, the file homework01.html, wherever is resides, will not be available until December 15th.
+</p>
+<p>
+  Additionally, you are able to use generic representations for classes and events then explicitly calling
+  out their filenames!
+</p>
+<pre><code class="html">class_1/homework    12  15
+class_2/all         12  15
+class_2             12  15  &larr; this has the same effect as the line above
+lab_3/filename.ext  12  15</code></pre>
+
+<p>
+  By default, the calendar system uses the <b>$YEAR</b> value within calendar.php
+  to set the year that will be used to unlock the file.
+  If you want to set this manually this can be done within the access file, example:
+</p>
+
+<pre><code class="html">class_1/homework    12  15 2020
+class_2/all         12  15 2020
+class_2             12  15 2020  &larr; this has the same effect as the line above
+lab_3/filename.ext  12  15 2020</code></pre>
+
+
+<a name="vfiles"></a>
+<h4>Virtual Files</h4>
+<p>
+  In the event that you would like to have a specific location outside of the standard structure for
+  storing files, you can create <b>virtual files</b> via a <b>class file</b> (currently <replace value="class_file">).
+  The name is defined by $CLASS_FILE in the configuration file <a href=calendar.php>calendar.php</a> , and has
+  a simple format: <b>virtual filename</b>, <b>actual filename</b>, <b>component type</b>,
+  and <b>component number</b> each separated by a tab.  Below is an example file.
+</p>
+<pre><code class="html">notes.html	homework/homework01.html	lab	1
+notes.tex 	docs/latex-template.tex 	class 	4</code></pre>
+<p>
+  These files will appear on that specific day whenever they occur.  In the example above
+  lab 1 would have the files notes.html added (which links to homework/homework01.html)
+  and class 4 would have a notes.tex files available (linking to docs/latex-template.tex).
+</p>
+
+<a name="notes"></a>
+<h4>Embedding Instructor Notes</h4>
+<p>
+  The system allows you to embed notes into the html files that can only be viewed by instructors who are logged on
+  by using <b>&lt;inst&gt; ... &lt;/inst&gt;</b> tags.
+</p>
+<pre><code class="html">&lt;inst&gt;
+  &lt;font size=3 color="#D11677"&gt;&lt;b&gt;Instructor Note&lt;/b&gt;:
+    These notes will only be visible to &lt;b&gt;instructors&lt;/b&gt;
+  &lt;/font&gt;
+&lt;/inst&gt;</code></pre>
+
+<h4>Embedding Revealable Answers</h4>
+<p>
+  Similar to the <b>inst</b>ructor tag above, if you would like to hide answers to selected problems for the students
+  use <b>&lt;student&gt; ... &lt;/student&gt;</b> tags, on the page view a little magnifying glass
+  will appear that will allow them to see these notes.
+</p>
+<pre><code class="html">&lt;student&gt;
+  &lt;pre&gt;&lt;code class="php"&gt;
+    $answer = "Provide the answers to your students.";
+  &lt;/code&gt;&lt;/pre&gt;
+&lt;/student&gt;</code></pre>
+
+<h4>Embedding other files or source code</h4>
+<p>
+  If you would like to include another file (html, source code, etc), in your HTML files, the system can inject
+  that file into the results and process the contents as if they were part of the initial web page.  There are
+  two tags that will become useful.  <b>&lt;inject&gt;</b> and <b>&lt;codeinject&gt;</b>, the difference between
+  the two tags is that <b>&lt;codeinject&gt;</b> will replace any <b>&lt;</b> or <b>&gt;</b> signs with the
+  appropriate HTML so that they will be displayed correctly.
+</p>
+<pre><code class="html">&lt;inject src="subdirectory/example2.html"&gt;</code></pre>
+<pre><code class="html">&lt;codeinject src="Example.java"&gt;</code></pre>
+<p>
+In a more useful example:
+</p>
+<pre><code class="html">&lt;pre&gt;
+  &lt;code class="java"&gt;
+    &lt;codeinject src="Example.java"&gt;
+  &lt;/code&gt;
+&lt;/pre&gt;</code></pre>
+
+<h4>Content based on the $PAGE_MODIFY variable</h4>
+<p>
+  You can also edit the $PAGE_MODIFY variable in calendar.php, this is an associative
+  array of key &rarr; value pairs which will be replaced in your web pages if you use the replace
+  tag.  Example:
+  <pre><code class="html"># calendar.php
+# Dynamically change content within a page based on these variables
+$PAGE_MODIFY = array('classyear'=>'18', 'something'=>'test');</code></pre>
+  If, inside of your html for the day, the following line of HTML existed:
+  <br><br>
+  <pre><code class="html">&lt;b&gt;Welcome class of &lt;replace value="classyear"&gt;&lt;/b&gt;!</code></pre>
+  The result would be <b>Welcome class of 18</b>!
+</p>
+<p>
+  A few values are automatically populated for you, unless explicitly defined in $PAGE_MODIFY, these
+  include:
+  <ul>
+    <li>
+      <b>type</b> - What type of class we are currently in (example class, project, lab, exam...)
+    </li>
+    <li>
+      <b>ctype</b> - Same as <b>type</b>, except the first character is <b><u>C</u></b>apitalized.
+    </li>
+    <li>
+      <b>event</b> - What the number of this class/lab/etc is.
+    </li>
+    <li>
+      <b>zevent</b> - What the number of this class/lab/etc is (2 digits zero filled).
+    </li>
+    <li>
+      <b>title</b> - The title of this specific class/lab/etc.
+    </li>
+    <li>
+      <b>course</b> - The defined course number, example: <replace value="course">.
+    </li>
+    <li>
+      <b>coursename</b> - The long title of the course, example: Web and Internet Programming
+    </li>
+  </ul>
+</p>
+<p>
+  Below is a more involved example:
+  <pre><code class="html">Welcome to &lt;replace value="course"&gt;,
+today we will be working on &lt;replace value="type"&gt; &lt;replace value="event"&gt;.</code></pre>
+</p>
+<p>
+  Which could create the line: <b>Welcome to <replace value="course">, today we will be working on lab 1</b>.
+</p>
+
+<h4>Content based on the URL and $_GET</h4>
+<p>
+  Page content can be directly modified
+  by the user who edits the URL, by adding the <b>url</b> tag.  Example:
+  <pre><code class="html">&lt;b&gt;Hello User &lt;url value="alpha" default="m18xxxx"&gt;&lt;/b&gt;  </code></pre>
+  Try this by adding something like
+  <code>&amp;alpha=m194141</code> to the enf of the URL on the browser bar,
+  currently this results in
+  <b>Hello User <url value="alpha" default="m18xxxx"></b>.
+</p>
+<p>
+  <b>Note</b>: Inputs used in this fashion are stored to the PHP Session, and will
+  automatically be populated into pages as long as the session is active.
+</p>
+
+<h4>Providing Search Links</h4>
+<p>
+  The Calendar will allow you embed code that will search for keywords or general text using
+  <b>&lt;keyword&gt;</b> or <b>&lt;search&gt;</b> tags.
+</p>
+<pre><code class="html">&lt;keyword src="Problems"&gt;</code></pre>
+<pre><code class="html">&lt;search src="Interesting"&gt;</code></pre>
+<p>
+  Keywords are sections defined by <b> &lt;a name=""&gt; </b> tags (as seen above), while
+  generic searches will look for any content.  <b>Note:</b> these features are case sensitive, and
+  searching will accept regular expressions.
+</p>
+
+<h4>Including and Running PHP Code</h4>
+<p>
+  If you wish to run PHP code within the calendar, this can be done, but you must have
+  the PHP in a separate file that is, in essense, being included by the class lecture notes.
+  to load a set of PHP code, use the &lt;calphp src="filename.php"&gt; tag.  Below is an example
+  PHP script and the associated output:
+</p>
+<pre><code class="PHP">&lt;php
+  echo "&lt;h5&gt;This is a &lt;b&gt;test&lt;/b&gt;&lt;/h5&gt;";
+?&gt;</code></pre>
+<h5>This is a <b>test</b></h5>
+
+<p>
+  You will need to take care when creating PHP scripts, a fatal error in an included script
+  will cause the calendar system to stop abruptly and fail.
+</p>
+
+<h4>Embedding Editable Code</h4>
+<p>
+  The Calendar will allow you to use the <a href="https://ace.c9.io/">Ace Editor</a>, and
+  has abstracted away the difficulty of its use via the <b>&lt;ace&gt;</b> tags.
+</p>
+<pre><code class="html">&lt;ace name="htmldemo" mode="html_elixir" theme="crimson_editor" height="48px"&gt;Hello World&lt;/ace&gt;</code></pre>
+<ace name="htmldemo" mode="html_elixir" theme="crimson_editor" height="48px">Hello World</ace>
+<br />
+<p>
+  Additionally you can have changes that are made update some other area on your page, by creating another <b>div</b>
+  with <b>ace_</b> followed by what you called the previous as the id.  Changes in the page will automatically be
+  reflected, see the demo below.  Additionally the options readonly="true" and nolinenumbers="true" will result
+  in a read-only box and a box without line numbers respectively.
+</p>
+<pre><code class="html">&lt;div id="ace_htmldemo"&gt;&lt;/div&gt;</code></pre>
+<div id="ace_htmldemo"></div>
+<br /><br /><br /><br /><br />

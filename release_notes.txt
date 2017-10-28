@@ -1,0 +1,101 @@
+20160502 - Calendar Version 4.0 - Initial Release
+20160505 - Added Highlight in navbar drop down to make
+           it easier to determine which class/lab is being viewed
+         - Changed Automatic-show-today to only show html
+20160506 - Fixed font spacing and sizing
+         - Adjusted default for code highlighting
+         - Remove tabs automatically from html files and replace with 2 spaces
+20160508 - Added <codeinject> and <inject> tags which will insert another file
+           into the generated HTML file, examples:
+           <codeinject src="test.cpp"> will be replaced with the contents of
+           test with all < and > replaced with &lt; and &gt; respectively.
+           <inject src="test.html"> will directly insert test.html with no
+           modifications.
+20160509 - Modified code to support nested directories under the class
+           directory, these directories and files are now available for use
+           within processed web pages, and directly via tokens.
+20160517 - Added calendar/calendar_display_summer.php which will support
+           providing a way to see each day of summer school.
+           Note: A day in summer school = a week normally, so everything that
+           appears as a week will be combined into a day in this view.
+20160518 - BUG FIX: Fixed a critical bug which would cause the system to
+           crash if it was not able to recurse into a directory.
+         - BUG FIX: If a directory is named wrong (like 01 vice 01.Intro),
+           the system will revert to the directory name (01 in this case) as
+           the class name.
+         - Updated documentation to discussion <codeinject> and <inject> tags
+20160519 - Added <search src=""> and <keyword src=""> tags, which will allow
+           for links within html that will provide a list of all pages that
+           match the search string (regex capable) or the specific <a name="x">
+           keyword, respectively.
+         - Added Search box on the navbar
+20160523 - Added the ability to use easier naming conventions for the access
+           file, such as:
+             Filename in access file  Example / Description
+             -----------------------  -----------------------------
+             class_1/filename         class_3/answersheet.txt
+             class_1/homework         * using homework/title will work with
+             class_1/title            * those items normally shown on calendar
+             class_1/all              <- Will affect all files in this directory
+         - Updated CSS to indent with <ol> and <ul> tags.
+20160608 - BUG FIX: Corrected issue with file unlocking by date, where the file
+           would be unavailable on the day it should unlock for the student.
+           BUG FIX: Fixed an issue where files would not be linked if they had
+           similar (overlapping names), the shorter one would be put in its
+           place breaking the file provider
+20160610 - BUG FIX: Corrected issue where directories that were not readible by
+           the web server user would prevent only partial reads of the files
+           within a directory.
+         - Updated documentation to discuss access file naming conventions
+         - Modified Bootstrap CSS to allow for color printing
+         - Modified default.css so that there were spaces after <ol> tags
+20160726 - BUG FIX: Corrected issue with table class RM which should have been
+           removing the bottom border from tables.
+         - Updated CSS to add /( and /) to denote inline MathJax notation
+20160728 - Changed font color under class icon from the link brown to a light
+           gray to remove confusion
+         - Added an Instructor icon left of resources which links to the
+           instructor guide (visible when logged on)
+20160805 - Upgraded components:
+           Bootstrap 3.3.6 -> 3.3.7
+           Highlightjs 9.3.0 -> 9.5.0
+           font-awesome 4.6.1 -> 4.6.3
+         - Changed default location of cal4.virtual and cal4.access to
+           virtual/ vice calendar/ so that future upgrades all that is necessary
+           is to extract the cal4-YYYYMMDD-upgrade.tgz file within the course
+           directory.
+20160820 - Integrated navbar template php scripts to the calendar, so that
+           this can serve as the basis for other projects.
+20161004 - Updated MySQL and client authentication libraries
+20161208 - Updated System to support multiple events on the same day using
+           the $COMBINE variable within calendar.php, format like:
+           $COMBINE = array('class'=>array(3=>array('class', 'class')));
+           Which will add two additional classes to the day that has "CLASS 3"
+20161208 - Upgraded components:
+           font-awesome 4.6.3 -> 4.7.0
+           highlight.js 9.5.0 -> 9.8.0
+20161209 - BUG FIX: Corrected issue where virtual file (access version)
+           was not properly handling spaces as a delimiter.
+20170303 - Upgraded components:
+           highlight.js 9.8.0 -> 9.9.0
+20170303 - Added <replace value=""> tag, uses $PAGE_MODIFY variable
+20170303 - Added page click logging option, users $ACCESS_LOG variable
+20170303 - BUG FIX: Correct issue where directory names were hard coded into page_main
+20170415 - Added <url value="" default=""> tag, uses $_GET variable
+           and remembers values via sessions
+20170808 - Added <ace ...> tag, allows for new syntax highlighting with an
+           editable interface.
+20170809 - upgraded components:
+           highlight.js 9.9.0 -> 9.12.0
+20170826 - added <calphp src="phpfile.php"> tag, that will include the php file
+           if it exists - this is dangerous but really useful
+20170827 - changed all $_POST and $_GET variables to $_REQUEST
+20171016 - Added auto-generated <replace> variables.
+20171016 - Updated priorities, files in calendar/ will be read before root
+           this supports a manual that is updated with patching
+20171022 - Editing of files now supported (if web user has permissions)
+         - Allow for sideview of html as typing
+20171024 - removed option to set $COMPONETS, generated automatically
+20171027 - Updated Security - Years are now taken into account for unlocking
+           files.
+20171028 - Initial Move to GITHUB!!!
