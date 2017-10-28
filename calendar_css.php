@@ -19,9 +19,9 @@
     <link href="<?php echo CALENDAR_PATH; ?>calendar/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Skeleton CSS -->
-    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/skeleton/normalize.css">
-    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/skeleton/skeleton.css">
-    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/skeleton/custom.css">
+    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/Skeleton/css/normalize.css">
+    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/Skeleton/css/skeleton.css">
+    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/css/skeleton-modifications.css">
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <link href="<?php echo CALENDAR_PATH; ?>calendar/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
