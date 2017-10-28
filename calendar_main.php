@@ -51,6 +51,11 @@
     }
   }
 
+  # Use the SQLite System if available
+  if (class_exists('SQLite3') && !isset($IGNORE_SQLITE) && isset($_REQUEST['debug'])) {
+    include_once('calendar_sqlite.php');
+  }
+
   # Validate a file to see if it should be accessible by the students
   # Returns array(VisibleInGeneral, VisibleOnCalendar, Year, Month, Day)
   function validate_file($instructor, $filename, $filewithpath, $access) {
@@ -819,7 +824,7 @@ EOF;
     $NAVBAR_DROPDOWNS = array('class' => 'glyphicon-apple',
                               'lab' => 'glyphicon-knight');
   }
-  
+
   # Show the navbar
   if (isset($_REQUEST['nocss'])) {
     # Do not load any css (debugging mode)
