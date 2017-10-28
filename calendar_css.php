@@ -35,7 +35,7 @@
     </script>
 
     <!-- Styles for the submission System -->
-    <link href="<?php echo CALENDAR_PATH; ?>calendar/css/default.css" rel="stylesheet">
+    <link href="<?php echo CALENDAR_PATH; ?>calendar/css/calendar-default.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -65,7 +65,7 @@
     <link rel="stylesheet" type="text/css" href="<?php echo CALENDAR_PATH; ?>calendar/Font-Awesome/css/font-awesome.min.css">
 
     <!-- Printing -->
-    <link rel="stylesheet" type="text/css" media="print" href="<?php echo CALENDAR_PATH; ?>calendar/css/print_style.css" />
+    <link rel="stylesheet" type="text/css" media="print" href="<?php echo CALENDAR_PATH; ?>calendar/css/calendar-print.css" />
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
