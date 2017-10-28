@@ -10,3 +10,6 @@
 [submodule "bootstrap3-ie10-viewport-bug-workaround"]
 	path = bootstrap3-ie10-viewport-bug-workaround
 	url = https://github.com/Haixing-Hu/bootstrap3-ie10-viewport-bug-workaround.git
+[submodule "dbauth"]
+	path = dbauth
+	url = git@github.com:jskenney/dbauth.git
