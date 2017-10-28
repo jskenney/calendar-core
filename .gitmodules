@@ -7,3 +7,6 @@
 [submodule "Skeleton"]
 	path = Skeleton
 	url = https://github.com/dhg/Skeleton.git
+[submodule "bootstrap3-ie10-viewport-bug-workaround"]
+	path = bootstrap3-ie10-viewport-bug-workaround
+	url = https://github.com/Haixing-Hu/bootstrap3-ie10-viewport-bug-workaround.git

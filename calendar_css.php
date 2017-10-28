@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/css/skeleton-modifications.css">
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <link href="<?php echo CALENDAR_PATH; ?>calendar/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+    <link href="<?php echo CALENDAR_PATH; ?>calendar/bootstrap3-ie10-viewport-bug-workaround/ie10-viewport-bug-workaround.css" rel="stylesheet">
 
     <!-- Fonts -->
     <link href='<?php echo CALENDAR_PATH; ?>calendar/fonts/raleway.css' rel='stylesheet' type='text/css'>
@@ -73,7 +73,7 @@
     <script src="<?php echo CALENDAR_PATH; ?>calendar/jquery/js/jquery.1.11.3.min.js"></script>
     <script src="<?php echo CALENDAR_PATH; ?>calendar/bootstrap/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <script src="<?php echo CALENDAR_PATH; ?>calendar/js/ie10-viewport-bug-workaround.js"></script>
+    <script src="<?php echo CALENDAR_PATH; ?>calendar/bootstrap3-ie10-viewport-bug-workaround/ie10-viewport-bug-workaround.js"></script>
   </head>
 
   <title><?php echo $PAGE_TITLE; ?></title>
