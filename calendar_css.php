@@ -62,7 +62,7 @@
     <script>hljs.initHighlightingOnLoad();</script>
 
     <!-- Font-Awesome -->
-    <link rel="stylesheet" type="text/css" href="<?php echo CALENDAR_PATH; ?>calendar/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="<?php echo CALENDAR_PATH; ?>calendar/Font-Awesome/css/font-awesome.min.css">
 
     <!-- Printing -->
     <link rel="stylesheet" type="text/css" media="print" href="<?php echo CALENDAR_PATH; ?>calendar/css/print_style.css" />
