@@ -16,7 +16,7 @@
     <link rel="icon" href="<?php echo CALENDAR_PATH; ?>calendar/images/web-icon.png">
 
     <!-- Bootstrap core CSS -->
-    <link href="<?php echo CALENDAR_PATH; ?>calendar/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo CALENDAR_PATH; ?>calendar/bootstrap/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Skeleton CSS -->
     <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/Skeleton/css/normalize.css">
@@ -71,7 +71,7 @@
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script src="<?php echo CALENDAR_PATH; ?>calendar/js/jquery.min.js"></script>
-    <script src="<?php echo CALENDAR_PATH; ?>calendar/js/bootstrap.min.js"></script>
+    <script src="<?php echo CALENDAR_PATH; ?>calendar/bootstrap/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="<?php echo CALENDAR_PATH; ?>calendar/js/ie10-viewport-bug-workaround.js"></script>
   </head>
