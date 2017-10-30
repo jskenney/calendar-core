@@ -99,3 +99,6 @@
 20171027 - Updated Security - Years are now taken into account for unlocking
            files.
 20171028 - Initial Move to GITHUB!!!
+20171030 - Updated Security - if the $ACCESS_FILE or $CLASS_FILE exist but 
+           are unreadable, show an error and do not provided any files to
+           the students.
