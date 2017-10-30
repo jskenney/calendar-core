@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171027');
+  define('CALENDAR_VERSION', '20171030');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -22,14 +22,24 @@
   $virtual = array();
   if (file_exists($CLASS_FILE)) {
     $vdata = file($CLASS_FILE);
-    foreach($vdata as $line) {
-      $line = trim($line);
-      $line = preg_split('/\s+/', $line);
-      if (count($line) == 4) {
-        if (!isset($virtual[$line[2]][$line[3]])) {
-          $virtual[$line[2]][$line[3]] = array();
+    if (!$vdata) {
+      if (isset($_REQUEST['event'])) { unset($_REQUEST['event']); }
+      if (isset($_REQUEST['type'])) { unset($_REQUEST['type']); }
+      if (isset($_REQUEST['key'])) { unset($_REQUEST['key']); }
+      if (isset($_REQUEST['show'])) { unset($_REQUEST['show']); }
+      $PAGE_MODIFY['error'] = "The Virtual Class File ($CLASS_FILE) can not be opened.";
+      $PAGE_MODIFY['error-comment'] = "The file was detected but the system was unable to read it, as a precaution the calendar will not show any content until this is corrected.";
+      $_REQUEST['load'] = 'error';
+    } else {
+      foreach($vdata as $line) {
+        $line = trim($line);
+        $line = preg_split('/\s+/', $line);
+        if (count($line) == 4) {
+          if (!isset($virtual[$line[2]][$line[3]])) {
+            $virtual[$line[2]][$line[3]] = array();
+          }
+          $virtual[$line[2]][$line[3]][] = array($line[0], $line[1]);
         }
-        $virtual[$line[2]][$line[3]][] = array($line[0], $line[1]);
       }
     }
   }
@@ -39,14 +49,24 @@
   $access = array();
   if (file_exists($ACCESS_FILE)) {
     $vdata = file($ACCESS_FILE);
-    foreach($vdata as $line) {
-      $line = trim($line);
-      $line = preg_split('/\s+/', $line);
-      if (count($line) == 3) {
-        $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>$YEAR);
-      }
-      if (count($line) == 4) {
-        $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>intval($line[3]));
+    if (!$vdata) {
+      if (isset($_REQUEST['event'])) { unset($_REQUEST['event']); }
+      if (isset($_REQUEST['type'])) { unset($_REQUEST['type']); }
+      if (isset($_REQUEST['key'])) { unset($_REQUEST['key']); }
+      if (isset($_REQUEST['show'])) { unset($_REQUEST['show']); }
+      $PAGE_MODIFY['error'] = "The Access File ($ACCESS_FILE) can not be opened.";
+      $PAGE_MODIFY['error-comment'] = "The file was detected but the system was unable to read it, as a precaution the calendar will not show any content until this is corrected.";
+      $_REQUEST['load'] = 'error';
+    } else {
+      foreach($vdata as $line) {
+        $line = trim($line);
+        $line = preg_split('/\s+/', $line);
+        if (count($line) == 3) {
+          $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>$YEAR);
+        }
+        if (count($line) == 4) {
+          $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>intval($line[3]));
+        }
       }
     }
   }
