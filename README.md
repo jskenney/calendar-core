@@ -12,5 +12,6 @@ See the calendar repo for additional information
 # Updating files
 Within the calendar-core directory, run the following command to update the calendar core
 ```
+git submodule update --recursive --remote
 git pull --recurse-submodules
 ```
