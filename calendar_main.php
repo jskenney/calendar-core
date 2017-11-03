@@ -29,8 +29,7 @@
   # $virtual = array('class'=>array(1 => array(array('answers.html', 'homework/answers05.html'))));
   $virtual = array();
   if (file_exists($CLASS_FILE)) {
-    $vdata = file($CLASS_FILE);
-    if (!$vdata) {
+    if (!is_readable($CLASS_FILE)) {
       if (isset($_REQUEST['event'])) { unset($_REQUEST['event']); }
       if (isset($_REQUEST['type'])) { unset($_REQUEST['type']); }
       if (isset($_REQUEST['key'])) { unset($_REQUEST['key']); }
@@ -39,6 +38,7 @@
       $PAGE_MODIFY['error-comment'] = "The file was detected but the system was unable to read it, as a precaution the calendar will not show any content until this is corrected.";
       $_REQUEST['load'] = 'error';
     } else {
+      $vdata = file($CLASS_FILE);
       foreach($vdata as $line) {
         $line = trim($line);
         $line = preg_split('/\s+/', $line);
@@ -56,8 +56,7 @@
   # $access = array('class01.html' => array('month'=>2, 'day'=>4));
   $access = array();
   if (file_exists($ACCESS_FILE)) {
-    $vdata = file($ACCESS_FILE);
-    if (!$vdata) {
+    if (!is_readable($ACCESS_FILE)) {
       if (isset($_REQUEST['event'])) { unset($_REQUEST['event']); }
       if (isset($_REQUEST['type'])) { unset($_REQUEST['type']); }
       if (isset($_REQUEST['key'])) { unset($_REQUEST['key']); }
@@ -66,6 +65,7 @@
       $PAGE_MODIFY['error-comment'] = "The file was detected but the system was unable to read it, as a precaution the calendar will not show any content until this is corrected.";
       $_REQUEST['load'] = 'error';
     } else {
+      $vdata = file($ACCESS_FILE);
       foreach($vdata as $line) {
         $line = trim($line);
         $line = preg_split('/\s+/', $line);
@@ -536,6 +536,13 @@
       fwrite($fp, $fpl);
       fclose($fp);
     }
+  }
+
+  # Lock the calendar if requested via lock files
+  if (!$INSTRUCTOR && isset($LOCK) && ($LOCK === true || file_exists($LOCK))) {
+    $PAGE_MODIFY['error'] = "The course website is currently locked.";
+    $PAGE_MODIFY['error-comment'] = "";
+    $_REQUEST['load'] = 'error';
   }
 
   # Get accessibles files located within the various component directories
