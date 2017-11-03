@@ -16,6 +16,14 @@
       $COMPONENTS[$type] = $type;
     }
   }
+  foreach ($COMBINE as $type => $cset) {
+    $COMPONENTS[$type] = $type;
+    foreach ($cset as $day => $inside) {
+      foreach ($inside as $ntype) {
+        $COMPONENTS[$ntype] = $ntype;
+      }
+    }
+  }
 
   # Load in the configuration for all virtual files
   # $virtual = array('class'=>array(1 => array(array('answers.html', 'homework/answers05.html'))));
@@ -919,6 +927,7 @@ EOF;
     if (isset($inject_src)) {
       print_r($inject_src);
     }
+    print_r($COMPONENTS);
     echo "</code></pre>";
   }
 
