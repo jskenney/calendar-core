@@ -22,6 +22,38 @@
             <li><a href="calendar.php?load=home">
                 <?php echo $COURSE; ?> - <?php echo $COURSENAME; ?></a></li>
 
+            <?php
+            if (!$INSTRUCTOR && isset($LOCK) && ($LOCK === true || file_exists($LOCK))) {
+              ?>
+                <li class="dropdown">
+                  <a href="#" title="Course Website Locked" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                  </a>
+                  <ul class="dropdown-menu  scrollable-menu">
+                  <form method=post class="navbar-form navbar-left" role="search">'
+                    <div class="input-group">
+                      <input type="password" class="form-control" placeholder="Password" name="password" id="password">
+                      <div class="input-group-btn">
+                          <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-lock"></i></button>
+                      </div>
+                    </div>
+                  </form>
+                </ul>
+                </li>
+              <?php
+            } else {
+              if (isset($LOCK) && ($LOCK === true || file_exists($LOCK))) {
+                ?>
+                <li>
+                  <a href="#" title="Course Website Locked" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                    <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
+                  </a>
+                </li>
+                <?php
+              }
+
+            ?>
+
             <li><a title="Calendar" href="calendar.php?show=calendar_display">
                 <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
                 </a></li>
@@ -42,6 +74,7 @@
                 </a></li>
             <?php
           }
+        }
         ?>
 
         <?php
@@ -62,10 +95,14 @@
               echo '</a></li>'.PHP_EOL;
             }
           }
-
         ?>
 
           </ul>
+
+        <?php
+          if (!$INSTRUCTOR && isset($LOCK) && ($LOCK === true || file_exists($LOCK))) {
+          } else {
+        ?>
 
           <ul class="nav navbar-nav navbar-right">
             <?php
@@ -184,6 +221,7 @@
             </li>
             <?php
               }
+            }
             ?>
 
           </ul>

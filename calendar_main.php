@@ -540,9 +540,11 @@
 
   # Lock the calendar if requested via lock files
   if (!$INSTRUCTOR && isset($LOCK) && ($LOCK === true || file_exists($LOCK))) {
-    $PAGE_MODIFY['error'] = "The course website is currently locked.";
-    $PAGE_MODIFY['error-comment'] = "";
-    $_REQUEST['load'] = 'error';
+    if (isset($_REQUEST['event'])) { unset($_REQUEST['event']); }
+    if (isset($_REQUEST['type'])) { unset($_REQUEST['type']); }
+    if (isset($_REQUEST['key'])) { unset($_REQUEST['key']); }
+    if (isset($_REQUEST['show'])) { unset($_REQUEST['show']); }
+    $_REQUEST['load'] = 'lock';
   }
 
   # Get accessibles files located within the various component directories
