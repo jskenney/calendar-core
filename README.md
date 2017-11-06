@@ -15,3 +15,11 @@ Within the calendar-core directory, run the following command to update the cale
 git submodule update --recursive --remote
 git pull --recurse-submodules
 ```
+
+# Advanced: For cloning calendar core into an existing git repository
+If you keep your class notes within a git repo, you will need to add this as a submodule
+```
+git submodule add -b master https://github.com/jskenney/calendar-core.git
+git submodule init
+git submodule update --remote
+```
