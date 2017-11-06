@@ -925,17 +925,27 @@ EOF;
   if ($INSTRUCTOR && isset($_REQUEST['debug'])) {
     print "<pre><code>";
     echo "INSTRUCTOR=$INSTRUCTOR <br>";
+    echo "\$events=";
     print_r($events);
+    echo "\$events_list=";
     print_r($events_list);
+    echo "\$keypairs=";
     print_r($keypairs);
+    echo "\$files=";
     print_r($files);
+    echo "\$categories=";
     print_r($categories);
+    echo "\$other=";
     print_r($other);
+    echo "\$_REQUEST=";
     print_r($_REQUEST);
+    echo "\$access=";
     print_r($access);
     if (isset($inject_src)) {
+      echo "\$inject_src=";
       print_r($inject_src);
     }
+    echo "\$COMPONENTS=";
     print_r($COMPONENTS);
     echo "</code></pre>";
   }
