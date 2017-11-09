@@ -84,7 +84,7 @@
               $key_link = "&key=".$_REQUEST['key'];
             }
             if (!isset($_REQUEST['answers'])) {
-              $unlock_link = "calendar.php?type=" . $_REQUEST['type'] . "&event=" . $_REQUEST['event'] . "$key_link&answers=yes#problems";
+              $unlock_link = "calendar.php?type=" . $_REQUEST['type'] . "&event=" . $_REQUEST['event'] . "$key_link&answers=yes";
               echo PHP_EOL."<li><a title='Show Problem Answers' href='$unlock_link'>";
               echo '<span class="glyphicon glyphicon-search" aria-hidden="true"></span>';
               echo '</a></li>'.PHP_EOL;
