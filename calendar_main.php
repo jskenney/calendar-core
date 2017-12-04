@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171109');
+  define('CALENDAR_VERSION', '20171203');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -386,6 +386,7 @@
                 $results_counter[$nday_type]++;
               }
               ## lets figure out what the event entails
+              $nday_num = -1;
               if (isset($events[$nday_type]) && isset($events[$nday_type][$results_counter[$nday_type]])) {
                 $event = $events[$nday_type][$results_counter[$nday_type]];
                 $nday_num = $results_counter[$nday_type];
@@ -508,14 +509,23 @@
   session_start();
   if (isset($_REQUEST['password']) && $_REQUEST['password'] == $ADMIN) {
     $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE);
+  } elseif (isset($_REQUEST['password'])
+      && isset($_SESSION['nonce'])
+      && $_REQUEST['password'] == hash('sha256', $ADMIN.$_SESSION['nonce'])) {
+    $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE);
   } elseif (isset($_REQUEST['password']) && isset($_SESSION["cal4-$COURSE"])) {
     unset($_SESSION["cal4-$COURSE"]);
   }
+
+  # Verify that authentication code is correct
   if (isset($_SESSION["cal4-$COURSE"])) {
     if ($_SESSION["cal4-$COURSE"] == sha1($SECRET.$ADMIN.$COURSE)) {
       $INSTRUCTOR = True;
     }
   }
+
+  # Setup for future challenge-response Authentication
+  $_SESSION['nonce'] = hash('sha256',"{".rand()."-".rand()."}");
 
   # Default to Student User Mode
   if (!isset($INSTRUCTOR)) {

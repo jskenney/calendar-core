@@ -30,7 +30,7 @@
                     <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
                   </a>
                   <ul class="dropdown-menu  scrollable-menu">
-                  <form method=post class="navbar-form navbar-left" role="search">'
+                  <form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'
                     <div class="input-group">
                       <input type="password" class="form-control" placeholder="Password" name="password" id="password">
                       <div class="input-group-btn">
@@ -168,7 +168,7 @@
 
               # Logon (or show logoff page)
               if ($INSTRUCTOR) {
-                echo '<form method=post class="navbar-form navbar-left" role="search">'.PHP_EOL;
+                echo '<form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'.PHP_EOL;
                 echo '  <div class="input-group">'.PHP_EOL;
                 echo '    <input type="hidden" class="form-control" placeholder="Password" name="password" id="password">'.PHP_EOL;
                 echo '    <div class="input-group-btn">'.PHP_EOL;
@@ -179,7 +179,7 @@
                 echo "<li><a href='#'>Version 4.".CALENDAR_VERSION."</a></li>".PHP_EOL;
               } else {
                 #echo "<li><a href='#'>Logon as Administrator</a></li>";
-                echo '<form method=post class="navbar-form navbar-left" role="search">'.PHP_EOL;
+                echo '<form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'.PHP_EOL;
                 echo '  <div class="input-group">'.PHP_EOL;
                 echo '    <input type="password" class="form-control" placeholder="Password" name="password" id="password">'.PHP_EOL;
                 echo '    <div class="input-group-btn">'.PHP_EOL;

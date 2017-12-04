@@ -34,6 +34,12 @@
       src="<?php echo CALENDAR_PATH; ?>calendar/ace-builds/src-noconflict/ace.js" charset="utf-8">
     </script>
 
+    <!-- To support challenge/response authentication -->
+    <script type="text/javascript">
+      var nonce = <?php echo json_encode($_SESSION['nonce']); ?>;
+    </script>
+    <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/js/sha256.js"></script>
+
     <!-- Styles for the submission System -->
     <link href="<?php echo CALENDAR_PATH; ?>calendar/css/calendar-default.css" rel="stylesheet">
 

@@ -107,3 +107,5 @@
          - Updated checks for access and virtual files.
          - Added the ability to set $LOCK = true, or $LOCK=filename which will
            prevent students from viewing content.
+20171203 - Updated Security to a Challenge / Response concept with a SHA256
+           password replacement on the client side.
