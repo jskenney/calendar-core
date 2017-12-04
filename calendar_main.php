@@ -508,24 +508,22 @@
   # Perform Authentication
   session_start();
   if (isset($_REQUEST['password']) && $_REQUEST['password'] == $ADMIN) {
-    $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE);
+    $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
   } elseif (isset($_REQUEST['password'])
-      && isset($_SESSION['nonce'])
-      && $_REQUEST['password'] == hash('sha256', $ADMIN.$_SESSION['nonce'])) {
-    $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE);
+      && isset($_SESSION["cal4-$COURSE-nonce"])
+      && $_REQUEST['password'] == hash('sha256', $ADMIN.$_SESSION["cal4-$COURSE-nonce"])) {
+    $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
   } elseif (isset($_REQUEST['password']) && isset($_SESSION["cal4-$COURSE"])) {
     unset($_SESSION["cal4-$COURSE"]);
   }
 
   # Verify that authentication code is correct
-  if (isset($_SESSION["cal4-$COURSE"])) {
-    if ($_SESSION["cal4-$COURSE"] == sha1($SECRET.$ADMIN.$COURSE)) {
+  if (isset($_SESSION["cal4-$COURSE"])
+      && $_SESSION["cal4-$COURSE"] == sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id())) {
       $INSTRUCTOR = True;
-    }
+  } else {
+    $_SESSION["cal4-$COURSE-nonce"] = hash('sha256',"{".rand()."-".rand()."}");
   }
-
-  # Setup for future challenge-response Authentication
-  $_SESSION['nonce'] = hash('sha256',"{".rand()."-".rand()."}");
 
   # Default to Student User Mode
   if (!isset($INSTRUCTOR)) {
@@ -935,6 +933,8 @@ EOF;
   if ($INSTRUCTOR && isset($_REQUEST['debug'])) {
     print "<pre><code>";
     echo "INSTRUCTOR=$INSTRUCTOR <br>";
+    echo "\$_SESSION=";
+    print_r($_SESSION);
     echo "\$events=";
     print_r($events);
     echo "\$events_list=";

@@ -36,7 +36,7 @@
 
     <!-- To support challenge/response authentication -->
     <script type="text/javascript">
-      var nonce = <?php echo json_encode($_SESSION['nonce']); ?>;
+      var nonce = <?php echo json_encode($_SESSION["cal4-$COURSE-nonce"]); ?>;
     </script>
     <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/js/sha256.js"></script>
 
