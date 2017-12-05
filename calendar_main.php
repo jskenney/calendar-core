@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171203');
+  define('CALENDAR_VERSION', '20171205');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
