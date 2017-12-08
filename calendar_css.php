@@ -73,6 +73,23 @@
     <!-- Printing -->
     <link rel="stylesheet" type="text/css" media="print" href="<?php echo CALENDAR_PATH; ?>calendar/css/calendar-print.css" />
 
+<?php
+  echo "    <!-- Custom CSS based on user preferences -->".PHP_EOL;
+  if (isset($CUSTOMCSS) && isset($_REQUEST['type']) && isset($CUSTOMCSS[$_REQUEST['type']])) {
+    foreach ($CUSTOMCSS[$_REQUEST['type']] as $ck => $crow) {
+      $cfilename = CALENDAR_PATH.$crow;
+      if (file_exists($cfilename)) {
+        echo "    <link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+      } else {
+        echo "    <!-- unable to find the file below from CUSTOMCSS ({$_REQUEST['type']}) variable:".PHP_EOL;
+        echo "         <link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+        echo "    -->".PHP_EOL;
+      }
+    }
+  }
+
+?>
+
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

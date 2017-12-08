@@ -81,6 +81,27 @@ lab/01.The first lab</code></pre>
   by escaping parenthesis, see example code below:
 </p>
 
+<h4>Adding Your own CSS</h4>
+<p>
+  The calendar system also supports adding your own CSS to specific
+  event categories (eg. class, lab, project, etc.).  This would allow
+  you to provide a set of CSS that just impacts classes but not labs.
+  To use this feature, within your <b>calendar.php</b> configuration page,
+  add the <b>$CUSTOMCSS</b> variable, below is an example that would load
+  the following files only for labs.
+  <ul>
+    <li>
+      <b>docs/custom1.css</b>
+    </li>
+    <li>
+      <b>docs/custom2.css</b>
+    </li>
+  </ul>
+</p>
+<p>
+  <pre><code class="PHP">$CUSTOMCSS = array('lab'=>array('docs/custom1.css', 'docs/custom2.css'));</code></pre>
+</p>
+
 <h4>Embedding Source Code</h4>
 <p>
   If you want to show users code, the <b>hightlight.js</b> library is included.

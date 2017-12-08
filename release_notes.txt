@@ -109,3 +109,4 @@
            prevent students from viewing content.
 20171203 - Updated Security to a Challenge / Response concept with a SHA256
            password replacement on the client side.
+20171208 - Added $CUSTOMCSS which allows for type specific custom CSS
