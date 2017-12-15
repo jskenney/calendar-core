@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171208');
+  define('CALENDAR_VERSION', '20171215');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -54,6 +54,8 @@
 
   # Load in the configuration for all access configurations
   # $access = array('class01.html' => array('month'=>2, 'day'=>4));
+  # $access = array('class01.html' => array('month'=>2, 'day'=>4, 'year'=>2018));
+  # $access = array('class01.html' => array('dynamic'=>'-2'));
   $access = array();
   if (file_exists($ACCESS_FILE)) {
     if (!is_readable($ACCESS_FILE)) {
@@ -69,6 +71,9 @@
       foreach($vdata as $line) {
         $line = trim($line);
         $line = preg_split('/\s+/', $line);
+        if (count($line) == 2 && (strpos($line[1], '-') === 0 || strpos($line[1], '+') === 0)) {
+          $access[$line[0]] = array('dynamic'=> $line[1]);
+        }
         if (count($line) == 3) {
           $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>$YEAR);
         }
@@ -87,8 +92,9 @@
   # Validate a file to see if it should be accessible by the students
   # Returns array(VisibleInGeneral, VisibleOnCalendar, Year, Month, Day)
   function validate_file($instructor, $filename, $filewithpath, $access) {
+    $time_delta = '';
     if (is_dir($filewithpath)) {
-      return array(False, False, 1, 1, 1, '');
+      return array(False, False, 1, 1, 1, '', $time_delta);
     }
     $today = getdate();
     $open_year = $today['year'];
@@ -96,16 +102,24 @@
     $open_day = 1;
     $cat_file = $filename;
     if (isset($access[basename($filewithpath)])) {
-      $open_day = intval($access[basename($filewithpath)]['day']);
-      $open_month = intval($access[basename($filewithpath)]['month']);
-      if (isset($access[basename($filewithpath)]['year'])) {
-        $open_year = intval($access[basename($filewithpath)]['year']);
+      if (isset($access[basename($filewithpath)]['dynamic'])) {
+        $time_delta = $access[basename($filewithpath)]['dynamic'];
+      } else {
+        $open_day = intval($access[basename($filewithpath)]['day']);
+        $open_month = intval($access[basename($filewithpath)]['month']);
+        if (isset($access[basename($filewithpath)]['year'])) {
+          $open_year = intval($access[basename($filewithpath)]['year']);
+        }
       }
     } elseif (isset($access[basename($filename)])) {
-      $open_day = intval($access[basename($filename)]['day']);
-      $open_month = intval($access[basename($filename)]['month']);
-      if (isset($access[basename($filename)]['year'])) {
-        $open_year = intval($access[basename($filename)]['year']);
+      if (isset($access[basename($filename)]['dynamic'])) {
+        $time_delta = $access[basename($filename)]['dynamic'];
+      } else {
+        $open_day = intval($access[basename($filename)]['day']);
+        $open_month = intval($access[basename($filename)]['month']);
+        if (isset($access[basename($filename)]['year'])) {
+          $open_year = intval($access[basename($filename)]['year']);
+        }
       }
     } else {
       $cp = array_reverse(explode('.', basename($filewithpath)));
@@ -114,19 +128,19 @@
         $open_month = intval($cp[2]);
         $cat_file = $cp[3] . '.' . $cp[0];
       } else {
-        return array(True, True, 1, 1, 1, $cat_file);
+        return array(True, True, 1, 1, 1, $cat_file, $time_delta);
       }
     }
     if (($open_month > 12 || $open_day > 31) && !$instructor) {
-      return array(False, False, $open_year, $open_month, $open_day, $cat_file);
+      return array(False, False, $open_year, $open_month, $open_day, $cat_file, $time_delta);
     } elseif ($today['year'] >= $open_year && $today['mon'] > $open_month) {
-      return array(True, True, $open_year, $open_month, $open_day, $cat_file);
+      return array(True, True, $open_year, $open_month, $open_day, $cat_file, $time_delta);
     } elseif ($today['year'] >= $open_year && $today['mon'] >= $open_month && $today['mday'] >= $open_day) {
-      return array(True, True, $open_year, $open_month, $open_day, $cat_file);
+      return array(True, True, $open_year, $open_month, $open_day, $cat_file, $time_delta);
     } elseif ($instructor) {
-      return array(True, False, $open_year, $open_month, $open_day, $cat_file);
+      return array(True, False, $open_year, $open_month, $open_day, $cat_file, $time_delta);
     }
-    return array(False, False, $open_year, $open_month, $open_day, $cat_file);
+    return array(False, False, $open_year, $open_month, $open_day, $cat_file, $time_delta);
   }
 
   # Determine what type of category the file is
@@ -191,6 +205,7 @@
                                                     'year' => $vf[2],
                                                     'month' => $vf[3],
                                                     'day' => $vf[4],
+                                                    'dynamic' => $vf[6],
                                                     'type' => $category[0],
                                                     'category' => $category[1],
                                                     'key' => $key);
@@ -203,6 +218,7 @@
                                                   'year' => $vf[2],
                                                   'month' => $vf[3],
                                                   'day' => $vf[4],
+                                                  'dynamic' => $vf[6],
                                                   'type' => $category[0],
                                                   'category' => $category[1],
                                                   'key' => $key);
@@ -231,6 +247,7 @@
                                                                     'year' => $vf[2],
                                                                     'month' => $vf[3],
                                                                     'day' => $vf[4],
+                                                                    'dynamic' => $vf[6],
                                                                     'type' => $category[0],
                                                                     'category' => $category[1],
                                                                     'key' => $key);
@@ -240,6 +257,11 @@
         }
       }
     }
+
+    #####################################################
+    # Calculate security dates dynamically for dynamic unlocking
+    print_r($results);
+
     #####################################################
     # Verify that the class is not blocked by security...
     $today = getdate();
