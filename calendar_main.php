@@ -260,7 +260,7 @@
 
     #####################################################
     # Calculate security dates dynamically for dynamic unlocking
-    print_r($results);
+    #print_r($results);
 
     #####################################################
     # Verify that the class is not blocked by security...
