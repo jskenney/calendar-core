@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171215');
+  define('CALENDAR_VERSION', '20171217');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -72,13 +72,13 @@
         $line = trim($line);
         $line = preg_split('/\s+/', $line);
         if (count($line) == 2 && (strpos($line[1], '-') === 0 || strpos($line[1], '+') === 0)) {
-          $access[$line[0]] = array('dynamic'=> $line[1]);
+          $access[$line[0]] = array('month'=>1, 'day'=>1, 'year'=>1, 'dynamic'=> $line[1]);
         }
         if (count($line) == 3) {
-          $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>$YEAR);
+          $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>$YEAR, 'dynamic'=>'');
         }
         if (count($line) == 4) {
-          $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>intval($line[3]));
+          $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>intval($line[3]), 'dynamic'=>'');
         }
       }
     }
@@ -92,9 +92,9 @@
   # Validate a file to see if it should be accessible by the students
   # Returns array(VisibleInGeneral, VisibleOnCalendar, Year, Month, Day)
   function validate_file($instructor, $filename, $filewithpath, $access) {
-    $time_delta = '';
+    $dynamic = '';
     if (is_dir($filewithpath)) {
-      return array(False, False, 1, 1, 1, '', $time_delta);
+      return array(False, False, 1, 1, 1, '', $dynamic);
     }
     $today = getdate();
     $open_year = $today['year'];
@@ -103,7 +103,7 @@
     $cat_file = $filename;
     if (isset($access[basename($filewithpath)])) {
       if (isset($access[basename($filewithpath)]['dynamic'])) {
-        $time_delta = $access[basename($filewithpath)]['dynamic'];
+        $dynamic = $access[basename($filewithpath)]['dynamic'];
       } else {
         $open_day = intval($access[basename($filewithpath)]['day']);
         $open_month = intval($access[basename($filewithpath)]['month']);
@@ -113,7 +113,7 @@
       }
     } elseif (isset($access[basename($filename)])) {
       if (isset($access[basename($filename)]['dynamic'])) {
-        $time_delta = $access[basename($filename)]['dynamic'];
+        $dynamic = $access[basename($filename)]['dynamic'];
       } else {
         $open_day = intval($access[basename($filename)]['day']);
         $open_month = intval($access[basename($filename)]['month']);
@@ -128,19 +128,19 @@
         $open_month = intval($cp[2]);
         $cat_file = $cp[3] . '.' . $cp[0];
       } else {
-        return array(True, True, 1, 1, 1, $cat_file, $time_delta);
+        return array(True, True, 1, 1, 1, $cat_file, $dynamic);
       }
     }
     if (($open_month > 12 || $open_day > 31) && !$instructor) {
-      return array(False, False, $open_year, $open_month, $open_day, $cat_file, $time_delta);
+      return array(False, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
     } elseif ($today['year'] >= $open_year && $today['mon'] > $open_month) {
-      return array(True, True, $open_year, $open_month, $open_day, $cat_file, $time_delta);
+      return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
     } elseif ($today['year'] >= $open_year && $today['mon'] >= $open_month && $today['mday'] >= $open_day) {
-      return array(True, True, $open_year, $open_month, $open_day, $cat_file, $time_delta);
+      return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
     } elseif ($instructor) {
-      return array(True, False, $open_year, $open_month, $open_day, $cat_file, $time_delta);
+      return array(True, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
     }
-    return array(False, False, $open_year, $open_month, $open_day, $cat_file, $time_delta);
+    return array(False, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
   }
 
   # Determine what type of category the file is
@@ -259,10 +259,6 @@
     }
 
     #####################################################
-    # Calculate security dates dynamically for dynamic unlocking
-    #print_r($results);
-
-    #####################################################
     # Verify that the class is not blocked by security...
     $today = getdate();
     foreach ($results as $l0 => $classes) {
@@ -276,7 +272,7 @@
               $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
               $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
               $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
-              //if (($today['mon'] > $access[$sspec]['month']) || ($today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
+              $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
               if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
                   || ($today['year'] >= $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
@@ -291,6 +287,7 @@
               $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
               $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
               $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
+              $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
               if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
@@ -305,6 +302,7 @@
               $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
               $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
               $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
+              $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
               if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
@@ -319,6 +317,7 @@
               $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
               $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
               $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
+              $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
               if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
@@ -401,7 +400,6 @@
           ## Example: $COMBINE = array('class'=>array(3=>array('class', 'class')));
           if (isset($COMBINE[$day_type][$day_num])) {
             foreach ($COMBINE[$day_type][$day_num] as $nday_type) {
-              #$nday_type = $COMBINE[$day_type][$day_num];
               if (!isset($results_counter[$nday_type])) {
                 $results_counter[$nday_type] = 1;
               } else {
@@ -593,6 +591,52 @@
     $COMBINE = array();
   }
   $events_list = calendar_events($events, $YEAR, $MONTH_START, $DAY_START, $WEEKENDS, $MONTH_END, $DOW, $OVERRIDE, $BOX, $COMBINE);
+
+  # Trim the $events_list variable removing any dynamically controlled content
+  # as part of the dynamic date security protocol.
+  for ($month = 1; $month < 13; $month++) {
+    for ($day = 1; $day < 32; $day++) {
+      if (isset($events_list[$month][$day]) && isset($events_list[$month][$day]['event']) && isset($events_list[$month][$day]['event']['box'])) {
+        foreach ($events_list[$month][$day]['event']['box'] as $ibox => $iset) {
+          if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '+') {
+            $delta = substr($iset['dynamic'], 1);
+            $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
+            $diffDay = new DateInterval("P".$delta."D");
+            $d0->add($diffDay);
+            $today = new DateTime();
+            if ($today < $d0) {
+              if ($INSTRUCTOR) {
+                $events_list[$month][$day]['event']['box'][$ibox]['visible'] = False;
+                $d0 = explode('-', $d0->format('Y-n-j'));
+                $events_list[$month][$day]['event']['box'][$ibox]['year'] = $d0[0];
+                $events_list[$month][$day]['event']['box'][$ibox]['month'] = $d0[1];
+                $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
+              } else {
+                unset($events_list[$month][$day]['event']['box'][$ibox]);
+              }
+            }
+          } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '-') {
+            $delta = substr($iset['dynamic'], 1);
+            $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
+            $diffDay = new DateInterval("P".$delta."D");
+            $d0->sub($diffDay);
+            $today = new DateTime();
+            if ($today < $d0) {
+              if ($INSTRUCTOR) {
+                $events_list[$month][$day]['event']['box'][$ibox]['visible'] = False;
+                $d0 = explode('-', $d0->format('Y-n-j'));
+                $events_list[$month][$day]['event']['box'][$ibox]['year'] = $d0[0];
+                $events_list[$month][$day]['event']['box'][$ibox]['month'] = $d0[1];
+                $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
+              } else {
+                unset($events_list[$month][$day]['event']['box'][$ibox]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 
   # Was a specific event requested, if so process the html and;
   #  - embed any local images
@@ -957,10 +1001,10 @@ EOF;
     echo "INSTRUCTOR=$INSTRUCTOR <br>";
     echo "\$_SESSION=";
     print_r($_SESSION);
-    echo "\$events=";
-    print_r($events);
     echo "\$events_list=";
     print_r($events_list);
+    echo "\$events=";
+    print_r($events);
     echo "\$keypairs=";
     print_r($keypairs);
     echo "\$files=";

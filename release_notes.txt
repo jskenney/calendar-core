@@ -110,3 +110,8 @@
 20171203 - Updated Security to a Challenge / Response concept with a SHA256
            password replacement on the client side.
 20171208 - Added $CUSTOMCSS which allows for type specific custom CSS
+20171217 - Added the ability for dynamic date based unlocking (based on the
+           date that an item appears on the calendar impacted by some delta)
+           Format in the access files is:
+           class_1 -2
+           The above would set the class to appear 2 days prior to the event

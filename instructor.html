@@ -237,6 +237,18 @@ class_2/all         12  15 2020
 class_2             12  15 2020  &larr; this has the same effect as the line above
 lab_3/filename.ext  12  15 2020</code></pre>
 
+<h4>Setting files to be available on a certain date <b>(dynamically)</b>:</h4>
+<p>
+  Within the Calendar access file, you can also set a delta for when a file
+  will become available.  Below is an example where the class will unlock
+  2 days before the date of the class on the calendar.
+  <pre><code class="html">class_2 -2</code></pre>
+</p>
+<p>
+  Similarly you can use the <b>+</b> to have a class appear after the lecture.
+  To have the item appear on the same day, just mark it as +0 or -0 days.
+  <pre><code class="html">class_2 -0</code></pre>
+</p>
 
 <a name="vfiles"></a>
 <h4>Virtual Files</h4>
