@@ -73,11 +73,9 @@
         $line = preg_split('/\s+/', $line);
         if (count($line) == 2 && (strpos($line[1], '-') === 0 || strpos($line[1], '+') === 0)) {
           $access[$line[0]] = array('month'=>1, 'day'=>1, 'year'=>1, 'dynamic'=> $line[1]);
-        }
-        if (count($line) == 3) {
+        } elseif (count($line) == 3) {
           $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>$YEAR, 'dynamic'=>'');
-        }
-        if (count($line) == 4) {
+        } elseif (count($line) == 4) {
           $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>intval($line[3]), 'dynamic'=>'');
         }
       }
@@ -270,10 +268,12 @@
             $sspec = False;
             if (isset($access[$l0."_".$counter."/".$filename])) {
               $sspec = $l0."_".$counter."/".$filename;
-            } elseif (isset($access[$l0."_".$counter]) && $cate == 'title') {
-              $sspec = $l0."_".$counter;
+            } elseif (isset($access[$filename])) {
+              $sspec = $filename;
             } elseif (isset($access[$l0."_".$counter."/".$cate])) {
-                $sspec = $l0."_".$counter."/".$cate;
+              $sspec = $l0."_".$counter."/".$cate;
+            } elseif (isset($access[$l0."_".$counter])) {
+              $sspec = $l0."_".$counter;
             } elseif (isset($access[$l0."/".$cate])) {
               $sspec = $l0."/".$cate;
             } elseif (isset($access[$l0."_".$counter."/all"])) {
