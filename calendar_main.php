@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171217');
+  define('CALENDAR_VERSION', '20171218');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -613,6 +613,9 @@
                 $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
               } else {
                 unset($events_list[$month][$day]['event']['box'][$ibox]);
+                if (isset($keypairs[$iset['key']])) {
+                  unset($keypairs[$iset['key']]);
+                }
               }
             }
           } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '-') {
@@ -630,6 +633,9 @@
                 $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
               } else {
                 unset($events_list[$month][$day]['event']['box'][$ibox]);
+                if (isset($keypairs[$iset['key']])) {
+                  unset($keypairs[$iset['key']]);
+                }
               }
             }
           }
