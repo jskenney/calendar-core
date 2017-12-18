@@ -267,59 +267,25 @@
         foreach ($data as $filename => $fdata) {
           if ($fdata['year'] == 1 && $fdata['month'] == 1 && $fdata['day'] == 1) {
             $cate = $fdata['category'];
+            $sspec = False;
             if (isset($access[$l0."_".$counter]) && $cate == 'title') {
               $sspec = $l0."_".$counter;
+            } elseif (isset($access[$l0."_".$counter."/".$cate])) {
+                $sspec = $l0."_".$counter."/".$cate;
+            } elseif (isset($access[$l0."_".$counter."/".$filename])) {
+              $sspec = $l0."_".$counter."/".$filename;
+            } elseif (isset($access[$l0."_".$counter."/all"])) {
+              $sspec = $l0."_".$counter."/all";
+            } elseif (isset($access[$l0])) {
+              $sspec = $l0;
+            }
+            if ($sspec !== False) {
               $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
               $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
               $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
               $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
               if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
                   || ($today['year'] >= $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
-                  || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
-              } else {
-                $results[$l0][$l1][$filename]['visible'] = False;
-                if (!$instructor) {
-                  unset($results[$l0][$l1][$filename]);
-                }
-              }
-            } elseif (isset($access[$l0."_".$counter."/".$cate])) {
-              $sspec = $l0."_".$counter."/".$cate;
-              $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
-              $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
-              $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
-              $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
-              if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
-                  || ($today['year'] == $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
-                  || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
-              } else {
-                $results[$l0][$l1][$filename]['visible'] = False;
-                if (!$instructor) {
-                  unset($results[$l0][$l1][$filename]);
-                }
-              }
-            } elseif (isset($access[$l0."_".$counter."/".$filename])) {
-              $sspec = $l0."_".$counter."/".$filename;
-              $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
-              $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
-              $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
-              $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
-              if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
-                  || ($today['year'] == $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
-                  || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
-              } else {
-                $results[$l0][$l1][$filename]['visible'] = False;
-                if (!$instructor) {
-                  unset($results[$l0][$l1][$filename]);
-                }
-              }
-            } elseif (isset($access[$l0."_".$counter."/all"])) {
-              $sspec = $l0."_".$counter."/all";
-              $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
-              $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
-              $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
-              $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
-              if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
-                  || ($today['year'] == $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
                   || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
               } else {
                 $results[$l0][$l1][$filename]['visible'] = False;
