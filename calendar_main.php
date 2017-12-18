@@ -268,12 +268,14 @@
           if ($fdata['year'] == 1 && $fdata['month'] == 1 && $fdata['day'] == 1) {
             $cate = $fdata['category'];
             $sspec = False;
-            if (isset($access[$l0."_".$counter]) && $cate == 'title') {
+            if (isset($access[$l0."_".$counter."/".$filename])) {
+              $sspec = $l0."_".$counter."/".$filename;
+            } elseif (isset($access[$l0."_".$counter]) && $cate == 'title') {
               $sspec = $l0."_".$counter;
             } elseif (isset($access[$l0."_".$counter."/".$cate])) {
                 $sspec = $l0."_".$counter."/".$cate;
-            } elseif (isset($access[$l0."_".$counter."/".$filename])) {
-              $sspec = $l0."_".$counter."/".$filename;
+            } elseif (isset($access[$l0."/".$cate])) {
+              $sspec = $l0."/".$cate;
             } elseif (isset($access[$l0."_".$counter."/all"])) {
               $sspec = $l0."_".$counter."/all";
             } elseif (isset($access[$l0])) {
@@ -562,6 +564,7 @@
   # as part of the dynamic date security protocol.
   for ($month = 1; $month < 13; $month++) {
     for ($day = 1; $day < 32; $day++) {
+
       if (isset($events_list[$month][$day]) && isset($events_list[$month][$day]['event']) && isset($events_list[$month][$day]['event']['box'])) {
         foreach ($events_list[$month][$day]['event']['box'] as $ibox => $iset) {
           if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '+') {
@@ -601,6 +604,56 @@
                 unset($events_list[$month][$day]['event']['box'][$ibox]);
                 if (isset($keypairs[$iset['key']])) {
                   unset($keypairs[$iset['key']]);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (isset($events_list[$month][$day]) && isset($events_list[$month][$day]['combine'])) {
+        foreach ($events_list[$month][$day]['combine'] as $outerbox => $outerset) {
+          if (isset($outerset['event']) && isset($outerset['event']['box'])) {
+            foreach($events_list[$month][$day]['combine'][$outerbox]['event']['box'] as $ibox => $iset) {
+              if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '+') {
+                $delta = substr($iset['dynamic'], 1);
+                $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
+                $diffDay = new DateInterval("P".$delta."D");
+                $d0->add($diffDay);
+                $today = new DateTime();
+                if ($today < $d0) {
+                  if ($INSTRUCTOR) {
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['visible'] = False;
+                    $d0 = explode('-', $d0->format('Y-n-j'));
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['year'] = $d0[0];
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['month'] = $d0[1];
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['day'] = $d0[2];
+                  } else {
+                    unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
+                    if (isset($keypairs[$iset['key']])) {
+                      unset($keypairs[$iset['key']]);
+                    }
+                  }
+                }
+              } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '-') {
+                $delta = substr($iset['dynamic'], 1);
+                $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
+                $diffDay = new DateInterval("P".$delta."D");
+                $d0->sub($diffDay);
+                $today = new DateTime();
+                if ($today < $d0) {
+                  if ($INSTRUCTOR) {
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['visible'] = False;
+                    $d0 = explode('-', $d0->format('Y-n-j'));
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['year'] = $d0[0];
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['month'] = $d0[1];
+                    $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['day'] = $d0[2];
+                  } else {
+                    unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
+                    if (isset($keypairs[$iset['key']])) {
+                      unset($keypairs[$iset['key']]);
+                    }
+                  }
                 }
               }
             }
