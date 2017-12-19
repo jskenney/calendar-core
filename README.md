@@ -21,5 +21,6 @@ If you keep your class notes within a git repo, you will need to add this as a s
 ```
 git submodule add -b master https://github.com/jskenney/calendar-core.git
 git submodule init
+git submodule update --init --recursive
 git submodule update --remote
 ```
