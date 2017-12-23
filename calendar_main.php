@@ -570,10 +570,11 @@
           if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '+') {
             $delta = substr($iset['dynamic'], 1);
             $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-            if (is_int($iset['dynamic'])) {
+            if (is_numeric($iset['dynamic'])) {
               $diffDay = new DateInterval("P".$delta."D");
               $d0->add($diffDay);
             } else {
+              error_log("Weird [$delta]");
               $d0->modify('next '.$delta);
             }
             $today = new DateTime();
@@ -594,7 +595,7 @@
           } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '-') {
             $delta = substr($iset['dynamic'], 1);
             $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-            if (is_int($iset['dynamic'])) {
+            if (is_numeric($iset['dynamic'])) {
               $diffDay = new DateInterval("P".$delta."D");
               $d0->sub($diffDay);
             } else {
@@ -626,7 +627,7 @@
               if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '+') {
                 $delta = substr($iset['dynamic'], 1);
                 $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-                if (is_int($iset['dynamic'])) {
+                if (is_numeric($iset['dynamic'])) {
                   $diffDay = new DateInterval("P".$delta."D");
                   $d0->add($diffDay);
                 } else {
@@ -650,7 +651,7 @@
               } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '-') {
                 $delta = substr($iset['dynamic'], 1);
                 $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-                if (is_int($iset['dynamic'])) {
+                if (is_numeric($iset['dynamic'])) {
                   $diffDay = new DateInterval("P".$delta."D");
                   $d0->sub($diffDay);
                 } else {
