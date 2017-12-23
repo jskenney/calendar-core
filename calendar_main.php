@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171223a');
+  define('CALENDAR_VERSION', '20171223b');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -585,6 +585,7 @@
                 $events_list[$month][$day]['event']['box'][$ibox]['month'] = $d0[1];
                 $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
               } else {
+                unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                 unset($events_list[$month][$day]['event']['box'][$ibox]);
                 if (isset($keypairs[$iset['key']])) {
                   unset($keypairs[$iset['key']]);
@@ -609,6 +610,7 @@
                 $events_list[$month][$day]['event']['box'][$ibox]['month'] = $d0[1];
                 $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
               } else {
+                unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                 unset($events_list[$month][$day]['event']['box'][$ibox]);
                 if (isset($keypairs[$iset['key']])) {
                   unset($keypairs[$iset['key']]);
@@ -641,6 +643,7 @@
                     $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['month'] = $d0[1];
                     $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['day'] = $d0[2];
                   } else {
+                    unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                     unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
                     if (isset($keypairs[$iset['key']])) {
                       unset($keypairs[$iset['key']]);
@@ -665,6 +668,7 @@
                     $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['month'] = $d0[1];
                     $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['day'] = $d0[2];
                   } else {
+                    unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                     unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
                     if (isset($keypairs[$iset['key']])) {
                       unset($keypairs[$iset['key']]);
@@ -1042,10 +1046,10 @@ EOF;
     echo "INSTRUCTOR=$INSTRUCTOR <br>";
     echo "\$_SESSION=";
     print_r($_SESSION);
-    echo "\$events_list=";
-    print_r($events_list);
     echo "\$events=";
     print_r($events);
+    echo "\$events_list=";
+    print_r($events_list);
     echo "\$keypairs=";
     print_r($keypairs);
     echo "\$files=";
