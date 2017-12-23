@@ -573,6 +573,8 @@
             if (is_int($iset['dynamic'])) {
               $diffDay = new DateInterval("P".$delta."D");
               $d0->add($diffDay);
+            } else {
+              $d0->modify('next '.$delta);
             }
             $today = new DateTime();
             if ($today < $d0) {
@@ -595,6 +597,8 @@
             if (is_int($iset['dynamic'])) {
               $diffDay = new DateInterval("P".$delta."D");
               $d0->sub($diffDay);
+            } else {
+              $d0->modify('last '.$delta);
             }
             $today = new DateTime();
             if ($today < $d0) {
@@ -614,7 +618,7 @@
           }
         }
       }
-
+      # Handle Dynamic [COMBINED] Content
       if (isset($events_list[$month][$day]) && isset($events_list[$month][$day]['combine'])) {
         foreach ($events_list[$month][$day]['combine'] as $outerbox => $outerset) {
           if (isset($outerset['event']) && isset($outerset['event']['box'])) {
@@ -625,6 +629,8 @@
                 if (is_int($iset['dynamic'])) {
                   $diffDay = new DateInterval("P".$delta."D");
                   $d0->add($diffDay);
+                } else {
+                  $d0->modify('next '.$delta);
                 }
                 $today = new DateTime();
                 if ($today < $d0) {
@@ -647,6 +653,8 @@
                 if (is_int($iset['dynamic'])) {
                   $diffDay = new DateInterval("P".$delta."D");
                   $d0->sub($diffDay);
+                } else {
+                  $d0->modify('last '.$delta);
                 }
                 $today = new DateTime();
                 if ($today < $d0) {
