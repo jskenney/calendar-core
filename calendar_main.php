@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171223');
+  define('CALENDAR_VERSION', '20171223a');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -574,7 +574,6 @@
               $diffDay = new DateInterval("P".$delta."D");
               $d0->add($diffDay);
             } else {
-              error_log("Weird [$delta]");
               $d0->modify('next '.$delta);
             }
             $today = new DateTime();
