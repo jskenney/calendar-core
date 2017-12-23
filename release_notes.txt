@@ -115,3 +115,6 @@
            Format in the access files is:
            class_1 -2
            The above would set the class to appear 2 days prior to the event
+20171223 - BUG FIX: Safeguards in place to ensure calendar doesn't break if
+           the access file is formated wrong with the new +/- support
+20171223 - Added +/-sunday (or any other day of week)
