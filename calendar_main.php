@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20171223b');
+  define('CALENDAR_VERSION', '20180102');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -10,17 +10,21 @@
     $type = str_replace(' ', '-', strtolower($type));
     $COMPONENTS[$type] = $type;
   }
-  foreach ($OVERRIDE as $i => $m) {
-    foreach ($m as $d => $type) {
-      $type = str_replace(' ', '-', strtolower($type));
-      $COMPONENTS[$type] = $type;
+  if (isset($OVERRIDE)) {
+    foreach ($OVERRIDE as $i => $m) {
+      foreach ($m as $d => $type) {
+        $type = str_replace(' ', '-', strtolower($type));
+        $COMPONENTS[$type] = $type;
+      }
     }
   }
-  foreach ($COMBINE as $type => $cset) {
-    $COMPONENTS[$type] = $type;
-    foreach ($cset as $day => $inside) {
-      foreach ($inside as $ntype) {
-        $COMPONENTS[$ntype] = $ntype;
+  if (isset($COMBINE)) {
+    foreach ($COMBINE as $type => $cset) {
+      $COMPONENTS[$type] = $type;
+      foreach ($cset as $day => $inside) {
+        foreach ($inside as $ntype) {
+          $COMPONENTS[$ntype] = $ntype;
+        }
       }
     }
   }

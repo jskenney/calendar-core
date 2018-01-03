@@ -205,15 +205,17 @@
                 <?php echo ucwords($type); ?><span class="caret"></span></a>
               <ul class="dropdown-menu  scrollable-menu">
                 <?php
-                  foreach ($events[$type] as $cname => $cdata) {
-                    if (isset($cdata['box']['title']) || $INSTRUCTOR) {
-                      if (isset($_REQUEST['type']) && isset($_REQUEST['event']) && $_REQUEST['type'] == $type && $_REQUEST['event'] == $cname) {
-                        echo "<li><a href='calendar.php?type=$type&event=$cname'><font color='black'><b>$cname - ".$cdata['name']."</b></font></a></li>".PHP_EOL;
+                  if (isset($events[$type])) {
+                    foreach ($events[$type] as $cname => $cdata) {
+                      if (isset($cdata['box']['title']) || $INSTRUCTOR) {
+                        if (isset($_REQUEST['type']) && isset($_REQUEST['event']) && $_REQUEST['type'] == $type && $_REQUEST['event'] == $cname) {
+                          echo "<li><a href='calendar.php?type=$type&event=$cname'><font color='black'><b>$cname - ".$cdata['name']."</b></font></a></li>".PHP_EOL;
+                        } else {
+                          echo "<li><a href='calendar.php?type=$type&event=$cname'>$cname - ".$cdata['name']."</a></li>".PHP_EOL;
+                        }
                       } else {
-                        echo "<li><a href='calendar.php?type=$type&event=$cname'>$cname - ".$cdata['name']."</a></li>".PHP_EOL;
+                        echo "<li><a title='Material not online at this time' href='#'><font color='#AAAAAA'>$cname - ".$cdata['name']."</font></a></li>".PHP_EOL;
                       }
-                    } else {
-                      echo "<li><a title='Material not online at this time' href='#'><font color='#AAAAAA'>$cname - ".$cdata['name']."</font></a></li>".PHP_EOL;
                     }
                   }
                 ?>
