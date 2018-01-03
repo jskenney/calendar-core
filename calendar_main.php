@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20180102');
+  define('CALENDAR_VERSION', '20180103');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -765,6 +765,11 @@
   # Check to see if a web page is requested
   # This will provide .html files in the root directory
   if (isset($_REQUEST['load'])) {
+    $actual = $_REQUEST['load'].'.pdf';
+    if (file_exists(basename($actual))) {
+      provide_file(basename($actual));
+      die;
+    }
     $actual = $_REQUEST['load'].'.html';
     if (file_exists('calendar/'.$actual)) {
       $contents = file_get_contents('calendar/'.basename($actual));
