@@ -773,7 +773,7 @@
     $actual = $_REQUEST['load'].'.html';
     if (file_exists('calendar/'.$actual)) {
       $contents = file_get_contents('calendar/'.basename($actual));
-    } elseif (file_exists($actual)) {
+    } elseif (file_exists(basename($actual))) {
       $contents = file_get_contents(basename($actual));
     }
   }
