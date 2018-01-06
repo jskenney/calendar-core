@@ -778,75 +778,6 @@
     }
   }
 
-  # Allow multiple levels of loading files (5 levels by default)
-  for ($loop_count = 0; $loop_count < 5; $loop_count++) {
-
-    # Search for <inject src=""> tags and directly copy the contents into this tag area
-    preg_match_all('/<inject[^>]+>/i', $contents, $injects);
-    foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
-      $tag_src = substr($tag_src[1][0],1,-1);
-      if ($tag_src != "" && isset($other[$tag_src])) {
-        $inject_data = file_get_contents($other[$tag_src]['actual']);
-        $inject_src[] = $tag_src;
-        $contents = str_ireplace('<inject src="'.$tag_src.'">', $inject_data, $contents);
-        $contents = str_ireplace("<inject src='$tag_src'>", $inject_data, $contents);
-      }
-    }
-
-    # Search for <codeinject src=""> tags and directly copy the contents into this tag area
-    preg_match_all('/<codeinject[^>]+>/i', $contents, $injects);
-    foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
-      $tag_src = substr($tag_src[1][0],1,-1);
-      if ($tag_src != "" && isset($other[$tag_src])) {
-        $inject_data = file_get_contents($other[$tag_src]['actual']);
-        $inject_data = str_ireplace('<', '&lt;', $inject_data);
-        $inject_data = str_ireplace('>', '&gt;', $inject_data);
-        $contents = str_ireplace('<codeinject src="'.$tag_src.'">', $inject_data, $contents);
-        $contents = str_ireplace("<codeinject src='$tag_src'>", $inject_data, $contents);
-      }
-    }
-  }
-
-  # Remove the contents of <inst>...</inst> tags if not log on
-  if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
-    $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
-  }
-  
-  # Search for student and instructor tags
-  $find_student = (strpos($contents, '<student>') > 0);
-  $find_instructor = (strpos($contents, '<inst>') > 0);
-
-  # Remove the contents of <student>...</student> tags if answers are to be hidden
-  if (!isset($_REQUEST['answers'])) {
-    $contents = preg_replace('/<student[^>]*>([\s\S]*?)<\/student[^>]*>/', '', $contents);
-  }
-
-  # Remove the student tag - in case it is used in problem sets
-  $contents = str_replace('<student>','',$contents);
-  $contents = str_replace('</student>','',$contents);
-
-  # Remove TABs, they are evil!
-  $contents = str_ireplace("\t", '  ', $contents);
-
-  # Replace image <img src>, <source src= />,  and anchor <a href> links with the key'd version of the file
-  foreach ($other as $fn => $value) {
-    $link = "calendar.php?key=".$value['key'];
-    if (isset($_REQUEST['type'])) {
-      $link .= '&type=' . $_REQUEST['type'];
-    }
-    if (isset($_REQUEST['event'])) {
-      $link .= '&event=' . $_REQUEST['event'];
-    }
-    $contents = str_ireplace('<img src="'.$fn.'"', '<img src="'.$link.'"', $contents);
-    $contents = str_ireplace("<img src='".$fn."'", "<img src='".$link."'", $contents);
-    $contents = str_ireplace('<source src="'.$fn.'"', '<source src="'.$link.'"', $contents);
-    $contents = str_ireplace("<source src='".$fn."'", "<source src='".$link."'", $contents);
-    $contents = str_ireplace('<a href="'.$fn.'"', '<a href="'.$link.'"', $contents);
-    $contents = str_ireplace("<a href='".$fn."'", "<a href='".$link."'", $contents);
-  }
-
   # Build default replace values
   if (!isset($PAGE_MODIFY['event']) && isset($_REQUEST['event'])) {
     $PAGE_MODIFY['event'] = $_REQUEST['event'];
@@ -876,19 +807,90 @@
     $PAGE_MODIFY['class_file'] = $CLASS_FILE;
   }
 
-  # Search for <replace value=""> tags and directly copy the the information
-  # from $PAGE_MODIFY into them.
-  preg_match_all('/<replace[^>]+>/i', $contents, $injects);
-  foreach($injects[0] as $row => $inject_tag) {
-    preg_match_all('/value=("[^"]*")/i',$inject_tag, $tag_src);
-    $tag_src = substr($tag_src[1][0],1,-1);
-    if ($tag_src != "" && isset($PAGE_MODIFY[$tag_src])) {
-      $inject_data = $PAGE_MODIFY[$tag_src];
-      $inject_data = str_ireplace('<', '&lt;', $inject_data);
-      $inject_data = str_ireplace('>', '&gt;', $inject_data);
-      $contents = str_ireplace('<replace value="'.$tag_src.'">', $inject_data, $contents);
-      $contents = str_ireplace("<replace value='$tag_src'>", $inject_data, $contents);
+  # Allow multiple levels of loading files (5 levels by default)
+  # I should probably make this loop exit if nothing changes...
+  for ($loop_count = 0; $loop_count < 5; $loop_count++) {
+
+    # Remove the contents of <inst>...</inst> tags if not log on
+    if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
+      $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
     }
+
+    # Search for student and instructor tags
+    $find_student = (strpos($contents, '<student>') > 0);
+    $find_instructor = (strpos($contents, '<inst>') > 0);
+
+    # Remove the contents of <student>...</student> tags if answers are to be hidden
+    if (!isset($_REQUEST['answers'])) {
+      $contents = preg_replace('/<student[^>]*>([\s\S]*?)<\/student[^>]*>/', '', $contents);
+    }
+
+    # Remove the student tag - in case it is used in problem sets
+    $contents = str_replace('<student>','',$contents);
+    $contents = str_replace('</student>','',$contents);
+
+    # Remove TABs, they are evil!
+    $contents = str_ireplace("\t", '  ', $contents);
+
+    # Replace image <img src>, <source src= />,  and anchor <a href> links with the key'd version of the file
+    foreach ($other as $fn => $value) {
+      $link = "calendar.php?key=".$value['key'];
+      if (isset($_REQUEST['type'])) {
+        $link .= '&type=' . $_REQUEST['type'];
+      }
+      if (isset($_REQUEST['event'])) {
+        $link .= '&event=' . $_REQUEST['event'];
+      }
+      $contents = str_ireplace('<img src="'.$fn.'"', '<img src="'.$link.'"', $contents);
+      $contents = str_ireplace("<img src='".$fn."'", "<img src='".$link."'", $contents);
+      $contents = str_ireplace('<source src="'.$fn.'"', '<source src="'.$link.'"', $contents);
+      $contents = str_ireplace("<source src='".$fn."'", "<source src='".$link."'", $contents);
+      $contents = str_ireplace('<a href="'.$fn.'"', '<a href="'.$link.'"', $contents);
+      $contents = str_ireplace("<a href='".$fn."'", "<a href='".$link."'", $contents);
+    }
+
+    # Search for <replace value=""> tags and directly copy the the information
+    # from $PAGE_MODIFY into them.
+    preg_match_all('/<replace[^>]+>/i', $contents, $injects);
+    foreach($injects[0] as $row => $inject_tag) {
+      preg_match_all('/value=("[^"]*")/i',$inject_tag, $tag_src);
+      $tag_src = substr($tag_src[1][0],1,-1);
+      if ($tag_src != "" && isset($PAGE_MODIFY[$tag_src])) {
+        $inject_data = $PAGE_MODIFY[$tag_src];
+        $inject_data = str_ireplace('<', '&lt;', $inject_data);
+        $inject_data = str_ireplace('>', '&gt;', $inject_data);
+        $contents = str_ireplace('<replace value="'.$tag_src.'">', $inject_data, $contents);
+        $contents = str_ireplace("<replace value='$tag_src'>", $inject_data, $contents);
+      }
+    }
+
+    # Search for <inject src=""> tags and directly copy the contents into this tag area
+    preg_match_all('/<inject[^>]+>/i', $contents, $injects);
+    foreach($injects[0] as $row => $inject_tag) {
+      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
+      $tag_src = substr($tag_src[1][0],1,-1);
+      if ($tag_src != "" && isset($other[$tag_src])) {
+        $inject_data = file_get_contents($other[$tag_src]['actual']);
+        $inject_src[] = $tag_src;
+        $contents = str_ireplace('<inject src="'.$tag_src.'">', $inject_data, $contents);
+        $contents = str_ireplace("<inject src='$tag_src'>", $inject_data, $contents);
+      }
+    }
+
+    # Search for <codeinject src=""> tags and directly copy the contents into this tag area
+    preg_match_all('/<codeinject[^>]+>/i', $contents, $injects);
+    foreach($injects[0] as $row => $inject_tag) {
+      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
+      $tag_src = substr($tag_src[1][0],1,-1);
+      if ($tag_src != "" && isset($other[$tag_src])) {
+        $inject_data = file_get_contents($other[$tag_src]['actual']);
+        $inject_data = str_ireplace('<', '&lt;', $inject_data);
+        $inject_data = str_ireplace('>', '&gt;', $inject_data);
+        $contents = str_ireplace('<codeinject src="'.$tag_src.'">', $inject_data, $contents);
+        $contents = str_ireplace("<codeinject src='$tag_src'>", $inject_data, $contents);
+      }
+    }
+
   }
 
   # Search for editable code via ACE
