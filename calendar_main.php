@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20180103');
+  define('CALENDAR_VERSION', '20180106');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -809,14 +809,14 @@
     }
   }
 
-  # Search for student and instructor tags
-  $find_student = (strpos($contents, '<student>') > 0);
-  $find_instructor = (strpos($contents, '<inst>') > 0);
-
   # Remove the contents of <inst>...</inst> tags if not log on
   if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
     $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
   }
+  
+  # Search for student and instructor tags
+  $find_student = (strpos($contents, '<student>') > 0);
+  $find_instructor = (strpos($contents, '<inst>') > 0);
 
   # Remove the contents of <student>...</student> tags if answers are to be hidden
   if (!isset($_REQUEST['answers'])) {
