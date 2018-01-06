@@ -809,28 +809,8 @@
 
   # Allow multiple levels of loading files (5 levels by default)
   # I should probably make this loop exit if nothing changes...
+  # Or continue until nothing changes (and a max...)
   for ($loop_count = 0; $loop_count < 5; $loop_count++) {
-
-    # Remove the contents of <inst>...</inst> tags if not log on
-    if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
-      $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
-    }
-
-    # Search for student and instructor tags
-    $find_student = (strpos($contents, '<student>') > 0);
-    $find_instructor = (strpos($contents, '<inst>') > 0);
-
-    # Remove the contents of <student>...</student> tags if answers are to be hidden
-    if (!isset($_REQUEST['answers'])) {
-      $contents = preg_replace('/<student[^>]*>([\s\S]*?)<\/student[^>]*>/', '', $contents);
-    }
-
-    # Remove the student tag - in case it is used in problem sets
-    $contents = str_replace('<student>','',$contents);
-    $contents = str_replace('</student>','',$contents);
-
-    # Remove TABs, they are evil!
-    $contents = str_ireplace("\t", '  ', $contents);
 
     # Replace image <img src>, <source src= />,  and anchor <a href> links with the key'd version of the file
     foreach ($other as $fn => $value) {
@@ -847,6 +827,8 @@
       $contents = str_ireplace("<source src='".$fn."'", "<source src='".$link."'", $contents);
       $contents = str_ireplace('<a href="'.$fn.'"', '<a href="'.$link.'"', $contents);
       $contents = str_ireplace("<a href='".$fn."'", "<a href='".$link."'", $contents);
+      $contents = str_ireplace('<showlink src="'.$fn.'">', $link, $contents);
+      $contents = str_ireplace("<showlink src='".$fn."'>", $link, $contents);
     }
 
     # Search for <replace value=""> tags and directly copy the the information
@@ -890,8 +872,28 @@
         $contents = str_ireplace("<codeinject src='$tag_src'>", $inject_data, $contents);
       }
     }
-
   }
+
+  # Remove the contents of <inst>...</inst> tags if not logged on
+  if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
+    $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
+  }
+
+  # Search for student and instructor tags
+  $find_student = (strpos($contents, '<student>') > 0);
+  $find_instructor = (strpos($contents, '<inst>') > 0);
+
+  # Remove the contents of <student>...</student> tags if answers are to be hidden
+  if (!isset($_REQUEST['answers'])) {
+    $contents = preg_replace('/<student[^>]*>([\s\S]*?)<\/student[^>]*>/', '', $contents);
+  }
+
+  # Remove the student tag - in case it is used in problem sets
+  $contents = str_replace('<student>','',$contents);
+  $contents = str_replace('</student>','',$contents);
+
+  # Remove TABs, they are evil!
+  $contents = str_ireplace("\t", '  ', $contents);
 
   # Search for editable code via ACE
   # Example:  <ace name="ace1" mode="html_elixir" height="48px" theme="tomorrow"></ace>
