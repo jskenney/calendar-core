@@ -286,6 +286,8 @@
               $sspec = $l0."_".$counter."/all";
             } elseif (isset($access[$l0])) {
               $sspec = $l0;
+            } elseif (isset($access["*"])) {
+              $sspec = "*";
             }
             if ($sspec !== False) {
               $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
