@@ -118,3 +118,7 @@
 20171223 - BUG FIX: Safeguards in place to ensure calendar doesn't break if
            the access file is formated wrong with the new +/- support
 20171223 - Added +/-sunday (or any other day of week)
+20180106 - Added <showlink src=""> tag to provide link for curl usage
+         - Modified access protocols, so next or last day_of_week will
+           not change the day (from day of calendar) if you say last monday
+           and it is currently already on a monday.

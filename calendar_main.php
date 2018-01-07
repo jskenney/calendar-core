@@ -279,7 +279,7 @@
             } elseif (isset($access[$l0."/".$cate])) {
               $sspec = $l0."/".$cate;
             } elseif (isset($access[$l0."_".$counter])) {
-              $sspec = $l0."_".$counter;            
+              $sspec = $l0."_".$counter;
             } elseif (isset($access[$l0."_".$counter."/all"])) {
               $sspec = $l0."_".$counter."/all";
             } elseif (isset($access[$l0])) {
@@ -571,14 +571,16 @@
 
       if (isset($events_list[$month][$day]) && isset($events_list[$month][$day]['event']) && isset($events_list[$month][$day]['event']['box'])) {
         foreach ($events_list[$month][$day]['event']['box'] as $ibox => $iset) {
-          if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '+') {
+          if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '+') {
             $delta = substr($iset['dynamic'], 1);
             $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
             if (is_numeric($iset['dynamic'])) {
               $diffDay = new DateInterval("P".$delta."D");
               $d0->add($diffDay);
             } else {
-              $d0->modify('next '.$delta);
+              if (strtoupper($d0->format('l')) != strtoupper($delta)) {
+                $d0->modify('next '.$delta);
+              }
             }
             $today = new DateTime();
             if ($today < $d0) {
@@ -596,14 +598,16 @@
                 }
               }
             }
-          } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '-') {
+          } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '-') {
             $delta = substr($iset['dynamic'], 1);
             $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
             if (is_numeric($iset['dynamic'])) {
               $diffDay = new DateInterval("P".$delta."D");
               $d0->sub($diffDay);
             } else {
-              $d0->modify('last '.$delta);
+              if (strtoupper($d0->format('l')) != strtoupper($delta)) {
+                $d0->modify('last '.$delta);
+              }
             }
             $today = new DateTime();
             if ($today < $d0) {
@@ -629,14 +633,16 @@
         foreach ($events_list[$month][$day]['combine'] as $outerbox => $outerset) {
           if (isset($outerset['event']) && isset($outerset['event']['box'])) {
             foreach($events_list[$month][$day]['combine'][$outerbox]['event']['box'] as $ibox => $iset) {
-              if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '+') {
+              if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '+') {
                 $delta = substr($iset['dynamic'], 1);
                 $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
                 if (is_numeric($iset['dynamic'])) {
                   $diffDay = new DateInterval("P".$delta."D");
                   $d0->add($diffDay);
                 } else {
-                  $d0->modify('next '.$delta);
+                  if (strtoupper($d0->format('l')) != strtoupper($delta)) {
+                    $d0->modify('next '.$delta);
+                  }
                 }
                 $today = new DateTime();
                 if ($today < $d0) {
@@ -654,14 +660,16 @@
                     }
                   }
                 }
-              } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0,1) == '-') {
+              } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '-') {
                 $delta = substr($iset['dynamic'], 1);
                 $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
                 if (is_numeric($iset['dynamic'])) {
                   $diffDay = new DateInterval("P".$delta."D");
                   $d0->sub($diffDay);
                 } else {
-                  $d0->modify('last '.$delta);
+                  if (strtoupper($d0->format('l')) != strtoupper($delta)) {
+                    $d0->modify('last '.$delta);
+                  }
                 }
                 $today = new DateTime();
                 if ($today < $d0) {
