@@ -264,11 +264,15 @@ lab/lab-solution           12  15 2020</code></pre>
 <p>
   An additional feature is the ability to set the unlock day based on day of the
   week in a similar fashion.  Example:
-  <pre><code class="html">class -sunday</code></pre>
+  <pre><code class="html">class -monday</code></pre>
 </p>
 <p>
-  In this example all classes would automatically unlock the Sunday before the
-  class.
+  In this example all classes would automatically unlock the previous monday
+  (unless the day the event appears on the calendar is a monday in which case it
+  will unlock on the day it appears on the calendar).  <b>Caution:</b>  if you
+  declare -monday and the day on the calendar is a monday it will unlock on the
+  calendar day, if you say +monday it will always change the date to the following
+  monday even if the day on the calendar is a monday!)
 </p>
 
 <a name="vfiles"></a>

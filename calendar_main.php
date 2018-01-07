@@ -578,9 +578,7 @@
               $diffDay = new DateInterval("P".$delta."D");
               $d0->add($diffDay);
             } else {
-              if (strtoupper($d0->format('l')) != strtoupper($delta)) {
-                $d0->modify('next '.$delta);
-              }
+              $d0->modify('next '.$delta);
             }
             $today = new DateTime();
             if ($today < $d0) {
@@ -640,9 +638,7 @@
                   $diffDay = new DateInterval("P".$delta."D");
                   $d0->add($diffDay);
                 } else {
-                  if (strtoupper($d0->format('l')) != strtoupper($delta)) {
-                    $d0->modify('next '.$delta);
-                  }
+                  $d0->modify('next '.$delta);
                 }
                 $today = new DateTime();
                 if ($today < $d0) {
