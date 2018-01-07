@@ -278,6 +278,8 @@
               $sspec = $l0."_".$counter."/".$cate;
             } elseif (isset($access[$l0."/".$cate])) {
               $sspec = $l0."/".$cate;
+            } elseif (isset($access["*/".$cate])) {
+              $sspec = "*/".$cate;
             } elseif (isset($access[$l0."_".$counter])) {
               $sspec = $l0."_".$counter;
             } elseif (isset($access[$l0."_".$counter."/all"])) {
