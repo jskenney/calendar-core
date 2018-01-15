@@ -34,11 +34,17 @@
       src="<?php echo CALENDAR_PATH; ?>calendar/ace-builds/src-noconflict/ace.js" charset="utf-8">
     </script>
 
-    <!-- To support challenge/response authentication -->
+    <!-- To support challenge/response authentication within course notes-->
+    <?php
+      if (isset($COURSE)) {
+    ?>
     <script type="text/javascript">
       var nonce = <?php echo json_encode($_SESSION["cal4-$COURSE-nonce"]); ?>;
     </script>
     <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/js/sha256.js"></script>
+    <?php
+      }
+    ?>
 
     <!-- Styles for the submission System -->
     <link href="<?php echo CALENDAR_PATH; ?>calendar/css/calendar-default.css" rel="stylesheet">
