@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.0
-  define('CALENDAR_VERSION', '20180106');
+  define('CALENDAR_VERSION', '20180121');
 
   # Build Components variable on the fly
   # This defines the directories that should be scanned
@@ -84,11 +84,6 @@
         }
       }
     }
-  }
-
-  # Use the SQLite System if available
-  if (class_exists('SQLite3') && !isset($IGNORE_SQLITE) && isset($_REQUEST['debug'])) {
-    include_once('calendar_sqlite.php');
   }
 
   # Validate a file to see if it should be accessible by the students
@@ -480,9 +475,10 @@
       case "svg": $ctype="image/svg+xml"; $attachment=""; break;
       case "gif": $ctype="image/gif"; $attachment=""; break;
       case "png": $ctype="image/png"; $attachment=""; break;
-      case "jpe": case "jpeg":
+      case "jpe": $ctype="image/jpg"; $attachment=""; break;
+      case "jpeg": $ctype="image/jpg"; $attachment=""; break;
       case "jpg": $ctype="image/jpg"; $attachment=""; break;
-      case "sql":
+      case "sql": $ctype="text/plain"; $attachment=""; break;
       case "txt": $ctype="text/plain"; $attachment=""; break;
       case "htm": $ctype="text/html"; $attachment=""; break;
       case "html": $ctype="text/html"; $attachment=""; break;
@@ -570,6 +566,13 @@
   }
   $events_list = calendar_events($events, $YEAR, $MONTH_START, $DAY_START, $WEEKENDS, $MONTH_END, $DOW, $OVERRIDE, $BOX, $COMBINE);
 
+  $other = array();
+  # Retrieve the other files in the specific lecture
+  if (isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($events[$_REQUEST['type']])) {
+    $other = array_keys($files[$_REQUEST['type']]);
+    $other = $files[$_REQUEST['type']][$other[$_REQUEST['event']-1]];
+  }
+
   # Trim the $events_list variable removing any dynamically controlled content
   # as part of the dynamic date security protocol.
   for ($month = 1; $month < 13; $month++) {
@@ -597,8 +600,13 @@
               } else {
                 unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                 unset($events_list[$month][$day]['event']['box'][$ibox]);
-                if (isset($keypairs[$iset['key']])) {
-                  unset($keypairs[$iset['key']]);
+                if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
+                    && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
+                      foreach ($other as $ofile => $odata) {
+                        if ($odata['key'] == $iset['key']) {
+                          unset($other[$ofile]);
+                        }
+                      }
                 }
               }
             }
@@ -624,8 +632,13 @@
               } else {
                 unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                 unset($events_list[$month][$day]['event']['box'][$ibox]);
-                if (isset($keypairs[$iset['key']])) {
-                  unset($keypairs[$iset['key']]);
+                if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
+                    && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
+                  foreach ($other as $ofile => $odata) {
+                    if ($odata['key'] == $iset['key']) {
+                      unset($other[$ofile]);
+                    }
+                  }
                 }
               }
             }
@@ -657,8 +670,13 @@
                   } else {
                     unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                     unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
-                    if (isset($keypairs[$iset['key']])) {
-                      unset($keypairs[$iset['key']]);
+                    if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
+                        && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
+                      foreach ($other as $ofile => $odata) {
+                        if ($odata['key'] == $iset['key']) {
+                          unset($other[$ofile]);
+                        }
+                      }
                     }
                   }
                 }
@@ -684,8 +702,13 @@
                   } else {
                     unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                     unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
-                    if (isset($keypairs[$iset['key']])) {
-                      unset($keypairs[$iset['key']]);
+                    if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
+                        && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
+                      foreach ($other as $ofile => $odata) {
+                        if ($odata['key'] == $iset['key']) {
+                          unset($other[$ofile]);
+                        }
+                      }
                     }
                   }
                 }
@@ -704,7 +727,6 @@
   # Place the results in $contents
   $contents = '';
   $actual = '';
-  $other = array();
   $find_student = False;
   $find_instructor = False;
   $navbar_display = "";
@@ -729,26 +751,22 @@
     }
   }
 
-  # Retrieve the other files in the specific lecture
-  if (isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($events[$_REQUEST['type']])) {
-    $other = array_keys($files[$_REQUEST['type']]);
-    $other = $files[$_REQUEST['type']][$other[$_REQUEST['event']-1]];
-  }
-
   # Check to see if event and type were provided and if they are valid
   if (isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($events[$_REQUEST['type']])) {
-
+    $file_type = '?';
+    $ext = '?';
     # If a valid keypair is provided use that file as the source
     if (isset($_REQUEST['key']) && isset($keypairs[$_REQUEST['key']])) {
-      $actual = $keypairs[$_REQUEST['key']];
-      $ext = pathinfo($actual, PATHINFO_EXTENSION);
+      foreach ($other as $ofile => $odata) {
+        if ($_REQUEST['key'] == $odata['key']) {
+          $actual = $keypairs[$_REQUEST['key']];
+          $ext = pathinfo($actual, PATHINFO_EXTENSION);
+        }
+      }
     } elseif (isset($events[$_REQUEST['type']][$_REQUEST['event']]['box']['title']['actual']) && isset($events[$_REQUEST['type']][$_REQUEST['event']]['box']['title']['type'])) {
       $actual = $events[$_REQUEST['type']][$_REQUEST['event']]['box']['title']['actual'];
       $file_type = $events[$_REQUEST['type']][$_REQUEST['event']]['box']['title']['type'];
       $ext = pathinfo($actual, PATHINFO_EXTENSION);
-    } else {
-      $file_type = '?';
-      $ext = '?';
     }
 
     # If the source is not html, provide the unprocessed file
