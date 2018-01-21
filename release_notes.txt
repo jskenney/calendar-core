@@ -123,3 +123,7 @@
            not change the day (from day of calendar) if you say last monday
            and it is currently already on a monday. Next day of week
            will always unlock it later on the calendar.
+20180121 - BUG FIX: Safeguards were removing shared files based on other
+           days on the calendar, preventing access.  Modified the way the
+           security protocol works with dynamic unlocking for files within
+           the same day.
