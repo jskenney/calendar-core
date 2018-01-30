@@ -76,6 +76,9 @@
     <!-- Font-Awesome -->
     <link rel="stylesheet" type="text/css" href="<?php echo CALENDAR_PATH; ?>calendar/Font-Awesome/css/font-awesome.min.css">
 
+    <!-- Datatables -->
+    <link rel="stylesheet" type="text/css" href="<?php echo CALENDAR_PATH; ?>calendar/datatables.net/datatables.min.css"/>
+
     <!-- Printing -->
     <link rel="stylesheet" type="text/css" media="print" href="<?php echo CALENDAR_PATH; ?>calendar/css/calendar-print.css" />
 
@@ -103,6 +106,9 @@
     <script src="<?php echo CALENDAR_PATH; ?>calendar/bootstrap/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="<?php echo CALENDAR_PATH; ?>calendar/bootstrap3-ie10-viewport-bug-workaround/ie10-viewport-bug-workaround.js"></script>
+    <!-- DataTables -->
+    <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/datatables.net/datatables.min.js"></script>
+
   </head>
 
   <title><?php echo $PAGE_TITLE; ?></title>
