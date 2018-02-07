@@ -108,74 +108,7 @@
       }
     }
     return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-    //
-    // if (($open_month > 12 || $open_day > 31) && !$instructor) {
-    //   return array(False, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-    // } elseif ($today['year'] >= $open_year && $today['mon'] > $open_month) {
-    //   return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-    // } elseif ($today['year'] >= $open_year && $today['mon'] >= $open_month && $today['mday'] >= $open_day) {
-    //   return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-    // } elseif ($instructor) {
-    //   return array(True, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-    // }
-    // return array(False, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
   }
-
-  // # Validate a file to see if it should be accessible by the students
-  // # Returns array(VisibleInGeneral, VisibleOnCalendar, Year, Month, Day)
-  // function validate_file($instructor, $filename, $filewithpath, $access) {
-  //   $dynamic = '';
-  //   if (is_dir($filewithpath)) {
-  //     return array(False, False, 1, 1, 1, '', $dynamic);
-  //   }
-  //   $today = getdate();
-  //   $open_year = $today['year'];
-  //   $open_month = 1;
-  //   $open_day = 1;
-  //   $cat_file = $filename;
-  //   if (isset($access[basename($filewithpath)])) {
-  //     if (isset($access[basename($filewithpath)]['dynamic'])) {
-  //       $dynamic = $access[basename($filewithpath)]['dynamic'];
-  //       // debug_console // error_log("d1.$dynamic");
-  //     } else {
-  //       $open_day = intval($access[basename($filewithpath)]['day']);
-  //       $open_month = intval($access[basename($filewithpath)]['month']);
-  //       if (isset($access[basename($filewithpath)]['year'])) {
-  //         $open_year = intval($access[basename($filewithpath)]['year']);
-  //       }
-  //     }
-  //   } elseif (isset($access[basename($filename)])) {
-  //     if (isset($access[basename($filename)]['dynamic'])) {
-  //       $dynamic = $access[basename($filename)]['dynamic'];
-  //       // debug_console // error_log("d2.$dynamic");
-  //     } else {
-  //       $open_day = intval($access[basename($filename)]['day']);
-  //       $open_month = intval($access[basename($filename)]['month']);
-  //       if (isset($access[basename($filename)]['year'])) {
-  //         $open_year = intval($access[basename($filename)]['year']);
-  //       }
-  //     }
-  //   } else {
-  //     $cp = array_reverse(explode('.', basename($filewithpath)));
-  //     if (count($cp) > 3 && is_numeric($cp[1]) && is_numeric($cp[2])) {
-  //       $open_day = intval($cp[1]);
-  //       $open_month = intval($cp[2]);
-  //       $cat_file = $cp[3] . '.' . $cp[0];
-  //     } else {
-  //       return array(True, True, 1, 1, 1, $cat_file, $dynamic);
-  //     }
-  //   }
-  //   if (($open_month > 12 || $open_day > 31) && !$instructor) {
-  //     return array(False, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-  //   } elseif ($today['year'] >= $open_year && $today['mon'] > $open_month) {
-  //     return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-  //   } elseif ($today['year'] >= $open_year && $today['mon'] >= $open_month && $today['mday'] >= $open_day) {
-  //     return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-  //   } elseif ($instructor) {
-  //     return array(True, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-  //   }
-  //   return array(False, False, $open_year, $open_month, $open_day, $cat_file, $dynamic);
-  // }
 
   # Determine what type of category the file is
   # types = html, link, src, txt, powerpoint, pdf (aka the extension!)
@@ -293,59 +226,6 @@
         }
       }
     }
-
-    // #####################################################
-    // # Verify that the class is not blocked by security...
-    // $today = getdate();
-    // foreach ($results as $l0 => $classes) {
-    //   $counter = 1;
-    //   foreach ($classes as $l1 => $data) {
-    //     foreach ($data as $filename => $fdata) {
-    //       if ($fdata['dynamic'] == '') {
-    //         $cate = $fdata['category'];
-    //         $sspec = False;
-    //         if (isset($access[$l0."_".$counter."/".$filename])) {
-    //           $sspec = $l0."_".$counter."/".$filename;
-    //         } elseif (isset($access[$filename])) {
-    //           $sspec = $filename;
-    //         } elseif (isset($access[$l0."_".$counter."/".$cate])) {
-    //           $sspec = $l0."_".$counter."/".$cate;
-    //         } elseif (isset($access[$l0."/".$cate])) {
-    //           $sspec = $l0."/".$cate;
-    //         } elseif (isset($access[$l0."_".$counter])) {
-    //           $sspec = $l0."_".$counter;
-    //         } elseif (isset($access[$l0."/*"])) {
-    //           $sspec = $l0."/*";
-    //         } elseif (isset($access[$l0."_".$counter."/all"])) {
-    //           $sspec = $l0."_".$counter."/all";
-    //         } elseif (isset($access["*/".$cate])) {
-    //           $sspec = "*/".$cate;
-    //         } elseif (isset($access[$l0])) {
-    //           $sspec = $l0;
-    //         } elseif (isset($access["*"])) {
-    //           $sspec = "*";
-    //         }
-    //         if ($sspec !== False) {
-    //           $results[$l0][$l1][$filename]['month'] = $access[$sspec]['month'];
-    //           $results[$l0][$l1][$filename]['day'] = $access[$sspec]['day'];
-    //           $results[$l0][$l1][$filename]['year'] = $access[$sspec]['year'];
-    //           $results[$l0][$l1][$filename]['dynamic'] = $access[$sspec]['dynamic'];
-    //           if (   ($today['year'] > $access[$sspec]['year']  && 12 >= $access[$sspec]['month'] && 31 >= $access[$sspec]['day'])
-    //               || ($today['year'] >= $access[$sspec]['year'] && $today['mon'] > $access[$sspec]['month'])
-    //               || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
-    //           } else {
-    //             $results[$l0][$l1][$filename]['visible'] = False;
-    //             if (!$instructor) {
-    //               unset($results[$l0][$l1][$filename]);
-    //               // debug_console // error_log("a.$filename");
-    //             }
-    //           }
-    //         }
-    //       }
-    //     }
-    //     $counter++;
-    //   }
-    // }
     return $results;
   }
 
@@ -381,7 +261,6 @@
             || ($today['year'] == $access[$sspec]['year'] && $today['mon'] == $access[$sspec]['month'] && $today['mday'] >= $access[$sspec]['day'])) {
               return array(True, $access[$sspec]['year'], $access[$sspec]['month'], $access[$sspec]['day'], $access[$sspec]['dynamic']);
         } else {
-          // debug_console // error_log("a.$filename");
           return array(False, $access[$sspec]['year'], $access[$sspec]['month'], $access[$sspec]['day'], $access[$sspec]['dynamic']);
         }
       } else {
@@ -401,9 +280,7 @@
               $diffDay = new DateInterval("P".$delta."D");
               $d0->sub($diffDay);
             } else {
-              // debug_console // error_log("upper=".$d0->format('l'));
               if (strtoupper($d0->format('l')) != strtoupper($delta)) {
-                // debug_console // error_log('delta='.$delta);
                 $d0->modify('last '.$delta);
               }
             }
@@ -413,7 +290,6 @@
         if ($today >= $d0) {
           return array(True, $d0v[0], $d0v[1], $d0v[2], $access[$sspec]['dynamic']);
         } else {
-          // debug_console // error_log("b.$filename");
           return array(False, $d0v[0], $d0v[1], $d0v[2], $access[$sspec]['dynamic']);
         }
       }
@@ -680,157 +556,6 @@
   }
   $events_list = calendar_events($events, $YEAR, $MONTH_START, $DAY_START, $WEEKENDS, $MONTH_END, $DOW, $OVERRIDE, $BOX, $COMBINE);
 
-  // # Trim the $events_list variable removing any dynamically controlled content
-  // # as part of the dynamic date security protocol.
-  // for ($month = 1; $month < 13; $month++) {
-  //   for ($day = 1; $day < 32; $day++) {
-  //     if (isset($events_list[$month][$day]) && isset($events_list[$month][$day]['event']) && isset($events_list[$month][$day]['event']['box'])) {
-  //       foreach ($events_list[$month][$day]['event']['box'] as $ibox => $iset) {
-  //         //get_file_security($l0, $l1, $cate, $filename, $access, $instructor, $results) {
-  //         if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '+') {
-  //           $delta = substr($iset['dynamic'], 1);
-  //           $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-  //           if (is_numeric($iset['dynamic'])) {
-  //             $diffDay = new DateInterval("P".$delta."D");
-  //             $d0->add($diffDay);
-  //           } else {
-  //             $d0->modify('next '.$delta);
-  //           }
-  //           $today = new DateTime();
-  //           if ($today < $d0) {
-  //             if ($INSTRUCTOR) {
-  //               $events_list[$month][$day]['event']['box'][$ibox]['visible'] = False;
-  //               $d0 = explode('-', $d0->format('Y-n-j'));
-  //               $events_list[$month][$day]['event']['box'][$ibox]['year'] = $d0[0];
-  //               $events_list[$month][$day]['event']['box'][$ibox]['month'] = $d0[1];
-  //               $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
-  //             } else {
-  //               unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
-  //               unset($events_list[$month][$day]['event']['box'][$ibox]);
-  //               if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
-  //                   && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
-  //                     foreach ($other as $ofile => $odata) {
-  //                       if ($odata['key'] == $iset['key']) {
-  //                         unset($other[$ofile]);
-  //                         // debug_console // error_log("1.".$ofile);
-  //                       }
-  //                     }
-  //               }
-  //             }
-  //           }
-  //         } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '-') {
-  //           $delta = substr($iset['dynamic'], 1);
-  //           $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-  //           if (is_numeric($iset['dynamic'])) {
-  //             $diffDay = new DateInterval("P".$delta."D");
-  //             $d0->sub($diffDay);
-  //           } else {
-  //             if (strtoupper($d0->format('l')) != strtoupper($delta)) {
-  //               $d0->modify('last '.$delta);
-  //             }
-  //           }
-  //           $today = new DateTime();
-  //           if ($today < $d0) {
-  //             if ($INSTRUCTOR) {
-  //               $events_list[$month][$day]['event']['box'][$ibox]['visible'] = False;
-  //               $d0 = explode('-', $d0->format('Y-n-j'));
-  //               $events_list[$month][$day]['event']['box'][$ibox]['year'] = $d0[0];
-  //               $events_list[$month][$day]['event']['box'][$ibox]['month'] = $d0[1];
-  //               $events_list[$month][$day]['event']['box'][$ibox]['day'] = $d0[2];
-  //             } else {
-  //               unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
-  //               unset($events_list[$month][$day]['event']['box'][$ibox]);
-  //               if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
-  //                   && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
-  //                 foreach ($other as $ofile => $odata) {
-  //                   if ($odata['key'] == $iset['key']) {
-  //                     unset($other[$ofile]);
-  //                     // debug_console // error_log("2.".$ofile);
-  //                   }
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //     # Handle Dynamic [COMBINED] Content
-  //     if (isset($events_list[$month][$day]) && isset($events_list[$month][$day]['combine'])) {
-  //       foreach ($events_list[$month][$day]['combine'] as $outerbox => $outerset) {
-  //         if (isset($outerset['event']) && isset($outerset['event']['box'])) {
-  //           foreach($events_list[$month][$day]['combine'][$outerbox]['event']['box'] as $ibox => $iset) {
-  //             if ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '+') {
-  //               $delta = substr($iset['dynamic'], 1);
-  //               $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-  //               if (is_numeric($iset['dynamic'])) {
-  //                 $diffDay = new DateInterval("P".$delta."D");
-  //                 $d0->add($diffDay);
-  //               } else {
-  //                 $d0->modify('next '.$delta);
-  //               }
-  //               $today = new DateTime();
-  //               if ($today < $d0) {
-  //                 if ($INSTRUCTOR) {
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['visible'] = False;
-  //                   $d0 = explode('-', $d0->format('Y-n-j'));
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['year'] = $d0[0];
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['month'] = $d0[1];
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['day'] = $d0[2];
-  //                 } else {
-  //                   unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
-  //                   unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
-  //                   if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
-  //                       && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
-  //                     foreach ($other as $ofile => $odata) {
-  //                       if ($odata['key'] == $iset['key']) {
-  //                         unset($other[$ofile]);
-  //                         // debug_console // error_log("3.".$ofile);
-  //                       }
-  //                     }
-  //                   }
-  //                 }
-  //               }
-  //             } elseif ($iset['dynamic'] != '' && substr($iset['dynamic'], 0, 1) == '-') {
-  //               $delta = substr($iset['dynamic'], 1);
-  //               $d0 = new DateTime("$YEAR-$month-$day 00:00:01");
-  //               if (is_numeric($iset['dynamic'])) {
-  //                 $diffDay = new DateInterval("P".$delta."D");
-  //                 $d0->sub($diffDay);
-  //               } else {
-  //                 if (strtoupper($d0->format('l')) != strtoupper($delta)) {
-  //                   $d0->modify('last '.$delta);
-  //                 }
-  //               }
-  //               $today = new DateTime();
-  //               if ($today < $d0) {
-  //                 if ($INSTRUCTOR) {
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['visible'] = False;
-  //                   $d0 = explode('-', $d0->format('Y-n-j'));
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['year'] = $d0[0];
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['month'] = $d0[1];
-  //                   $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['day'] = $d0[2];
-  //                 } else {
-  //                   unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
-  //                   unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
-  //                   if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
-  //                       && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
-  //                     foreach ($other as $ofile => $odata) {
-  //                       if ($odata['key'] == $iset['key']) {
-  //                         unset($other[$ofile]);
-  //                         // debug_console // error_log("4.".$ofile);
-  //                       }
-  //                     }
-  //                   }
-  //                 }
-  //               }
-  //             }
-  //           }
-  //         }
-  //       }
-  //     }
-  //   }
-  // }
-
   # Trim the $events_list variable removing any dynamically controlled content
   # as part of the dynamic date security protocol.
   for ($month = 1; $month < 13; $month++) {
@@ -846,27 +571,9 @@
           $events_list[$month][$day]['event']['box'][$ibox]['dynamic'] = $x[4];
           if (!$x[0]) {
             $events_list[$month][$day]['event']['box'][$ibox]['visible'] = False;
-            // echo "<pre>";
-            // print_r($ibox);
-            // echo "<hr>";
-            // print_r($iset);
-            // echo "<hr>";
-            // print_r($x);
-            // echo "<hr>";
-            // echo "</pre>";
             if (!$INSTRUCTOR) {
               unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
               unset($events_list[$month][$day]['event']['box'][$ibox]);
-              // debug_console // error_log("1a.".$iset['filename']);
-              // if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
-              //     && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
-              //   foreach ($other as $ofile => $odata) {
-              //     if ($odata['key'] == $iset['key']) {
-              //       unset($other[$ofile]);
-              //       // debug_console // error_log("XXX-1b.".$ofile);
-              //     }
-              //   }
-              // }
             }
           }
         }
@@ -885,27 +592,9 @@
               $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['dynamic'] = $x[4];
               if (!$x[0]) {
                 $events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]['visible'] = False;
-                // echo "<pre>";
-                // print_r($ibox);
-                // echo "<hr>";
-                // print_r($iset);
-                // echo "<hr>";
-                // print_r($x);
-                // echo "<hr>";
-                // echo "</pre>";
                 if (!$INSTRUCTOR) {
                   unset($events[$iset['ftype']][$iset['fclass']]['box'][$iset['category']]);
                   unset($events_list[$month][$day]['combine'][$outerbox]['event']['box'][$ibox]);
-                  // debug_console // error_log("4a.".$iset['filename']);
-                  // if (   isset($_REQUEST['type'])  && $_REQUEST['type']  == $iset['ftype']
-                  //     && isset($_REQUEST['event']) && $_REQUEST['event'] == $iset['fclass']) {
-                  //   foreach ($other as $ofile => $odata) {
-                  //     if ($odata['key'] == $iset['key']) {
-                  //       unset($other[$ofile]);
-                  //       // debug_console // error_log("XXX-4b.".$ofile);
-                  //     }
-                  //   }
-                  // }
                 }
               }
             }
@@ -938,15 +627,6 @@
       }
     }
   }
-
-  // # Retrieve the other files in the specific lecture
-  // $other = array();
-  // if (isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($events[$_REQUEST['type']])) {
-  //   echo "<pre>";
-  //   print_r($events[$_REQUEST['type']][$_REQUEST['event']]);
-  //   echo "</pre>";
-  // }
-  // die;
 
   # Was a specific event requested, if so process the html and;
   #  - embed any local images
