@@ -127,3 +127,18 @@
            days on the calendar, preventing access.  Modified the way the
            security protocol works with dynamic unlocking for files within
            the same day.
+20180207 - Version 4.1 - Rewrite of security engine to handle generic events
+           case as well as the "other" files of the day system.  This
+           modification ensures that the system handles the priorities
+           correctly, system priorities for access file are (in decreasing
+           priority):
+              class_01/filename
+              filename
+              class_01/category [such as homework]
+              class/category
+              class_01
+              class/*
+              class_01/all
+              */category
+              class
+              *

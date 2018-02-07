@@ -275,6 +275,23 @@ lab/lab-solution           12  15 2020</code></pre>
   monday even if the day on the calendar is a monday!)
 </p>
 
+<h5>Priorities within access file</h5>
+<p>
+  When building access control rules, understand that the priorities are the following (in reducing priority order):
+  <ul>
+    <li>class_01/filename</li>
+    <li>filename</li>
+    <li>class_01/category [such as homework]</li>
+    <li>class/category</li>
+    <li>class_01</li>
+    <li>class/*</li>
+    <li>class_01/all</li>
+    <li>*/category</li>
+    <li>class</li>
+    <li>*</li>
+  </ul>
+</p>
+
 <a name="vfiles"></a>
 <h4>Virtual Files</h4>
 <p>

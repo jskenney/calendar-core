@@ -176,7 +176,7 @@
                 echo '    </div>'.PHP_EOL;
                 echo '  </div>'.PHP_EOL;
                 echo '</form>'.PHP_EOL;
-                echo "<li><a href='#'>Version 4.".CALENDAR_VERSION."</a></li>".PHP_EOL;
+                echo "<li><a href='#'>Version ".CALENDAR_VERSION."</a></li>".PHP_EOL;
               } else {
                 #echo "<li><a href='#'>Logon as Administrator</a></li>";
                 echo '<form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'.PHP_EOL;
