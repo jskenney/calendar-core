@@ -34,6 +34,11 @@
       src="<?php echo CALENDAR_PATH; ?>calendar/ace-builds/src-noconflict/ace.js" charset="utf-8">
     </script>
 
+    <!-- Chart.js - http://www.chartjs.org -->
+    <script type="text/javascript"
+      src="<?php echo CALENDAR_PATH; ?>calendar/chartjs/Chart.bundle.min.js" charset="utf-8">
+    </script>
+
     <!-- To support challenge/response authentication within course notes-->
     <?php
       if (isset($COURSE)) {
