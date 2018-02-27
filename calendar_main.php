@@ -125,6 +125,14 @@
     return array($mytype, $myboxblock);
   }
 
+  # Function to get function()[], a feature that doesnt exist in older versions of PHP
+  function ancient($results, $index) {
+    if (!isset($results[$index])) {
+      return False;
+    }
+    return $results[$index];
+  }
+
   # Retrieve a list of directories and their files, that are sourced from the
   # content directories.  Files will be validated for access
   function get_files($instructor=False, $sources=array('class', 'lab', 'project', 'exam', 'review', 'capstone', 'continued-lab'), $file_path = '.', $access=array(), $virtual=array(), $categories=array(), $secret='really') {
@@ -161,9 +169,9 @@
             sort($level2);
             foreach ($level2 as $i => $l2) {
               $key = sha1($secret.$l0.$l1.$l2);
-              if (substr($l2, 0, 1) != '.' && validate_file($instructor, $l2, $file_path . '/' . $l0 . '/' . $l1 . '/' . $l2, $access)[0]) {
+              if (substr($l2, 0, 1) != '.' && ancient(validate_file($instructor, $l2, $file_path . '/' . $l0 . '/' . $l1 . '/' . $l2, $access), 0)) {
                 if (is_link($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2)) {
-                  if (validate_file($instructor, readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), $access)[0]) {
+                  if (validate_file($instructor, readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), ancient(readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), $access),0)) {
                     $vf = validate_file($instructor, readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), $access);
                     $category = categorize_file($instructor, $l2, readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), $vf[5], $categories);
                     $results[$l0][$l1][$l2] = array('actual' => $file_path . '/' . $l0 . '/' . $l1 . '/' . readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2),
@@ -206,7 +214,7 @@
             foreach ($l2array as $i => $values) {
               $virt_file = $values[0];
               $real_file = $values[1];
-              if (validate_file($instructor, $real_file, $real_file, $access)[0]) {
+              if (ancient(validate_file($instructor, $real_file, $real_file, $access),0)) {
                 $key = sha1($secret.$real_file.$virt_file);
                 $vf = validate_file($instructor, $real_file, $real_file, $access);
                 $category = categorize_file($instructor, $virt_file, $real_file, $vf[5], $categories);
@@ -980,7 +988,7 @@ EOF;
         if (isset($other[$tag_src])) {
           $curdir = getcwd();
           $runphp = realpath($other[$tag_src]['actual']);
-          chdir(pathinfo(realpath($other[$tag_src]['actual']))['dirname']);
+          chdir(ancient(pathinfo(realpath($other[$tag_src]['actual'])), 'dirname'));
           include($runphp);
           chdir($curdir);
         }
