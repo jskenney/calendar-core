@@ -139,6 +139,9 @@
               class_01
               class/*
               class_01/all
+              class_01/*
               */category
               class
               *
+20180227 - BUG FIX: Scripts now work on older version of PHP (ext web)
+20180228 - An empty ADMIN password will now prevent logon
