@@ -254,6 +254,8 @@
       $sspec = $l0."/*";
     } elseif (isset($access[$l0."_".$l1."/all"])) {
       $sspec = $l0."_".$l1."/all";
+    } elseif (isset($access[$l0."_".$l1."/*"])) {
+      $sspec = $l0."_".$l1."/*";
     } elseif (isset($access["*/".$cate])) {
       $sspec = "*/".$cate;
     } elseif (isset($access[$l0])) {
