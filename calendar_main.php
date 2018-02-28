@@ -501,27 +501,29 @@
 
   # Perform Authentication
   session_start();
-  if (isset($_REQUEST['password']) && $_REQUEST['password'] == $ADMIN) {
-    $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
-  } elseif (isset($_REQUEST['password'])
-      && isset($_SESSION["cal4-$COURSE-nonce"])
-      && $_REQUEST['password'] == hash('sha256', $ADMIN.$_SESSION["cal4-$COURSE-nonce"])) {
-    $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
-  } elseif (isset($_REQUEST['password']) && isset($_SESSION["cal4-$COURSE"])) {
-    unset($_SESSION["cal4-$COURSE"]);
-  }
+  if ($ADMIN != '') {
+    if (isset($_REQUEST['password']) && $_REQUEST['password'] == $ADMIN) {
+      $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
+    } elseif (isset($_REQUEST['password'])
+        && isset($_SESSION["cal4-$COURSE-nonce"])
+        && $_REQUEST['password'] == hash('sha256', $ADMIN.$_SESSION["cal4-$COURSE-nonce"])) {
+      $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
+    } elseif (isset($_REQUEST['password']) && isset($_SESSION["cal4-$COURSE"])) {
+      unset($_SESSION["cal4-$COURSE"]);
+    }
 
-  # Verify that authentication code is correct
-  if (isset($_SESSION["cal4-$COURSE"])
-      && $_SESSION["cal4-$COURSE"] == sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id())) {
-      $INSTRUCTOR = True;
-  } else {
-    $_SESSION["cal4-$COURSE-nonce"] = hash('sha256',"{".rand()."-".rand()."}");
-  }
+    # Verify that authentication code is correct
+    if (isset($_SESSION["cal4-$COURSE"])
+        && $_SESSION["cal4-$COURSE"] == sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id())) {
+        $INSTRUCTOR = True;
+    } else {
+      $_SESSION["cal4-$COURSE-nonce"] = hash('sha256',"{".rand()."-".rand()."}");
+    }
 
-  # Default to Student User Mode
-  if (!isset($INSTRUCTOR)) {
-    $INSTRUCTOR = False;
+    # Default to Student User Mode
+    if (!isset($INSTRUCTOR)) {
+      $INSTRUCTOR = False;
+    }
   }
 
   # Add a record of the visit to this page if $ACCESS_LOG is set
