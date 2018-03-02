@@ -32,7 +32,7 @@
                   <ul class="dropdown-menu  scrollable-menu">
                   <form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'
                     <div class="input-group">
-                      <input type="password" class="form-control" placeholder="Password" name="password" id="password">
+                      <input type="password" class="form-control" placeholder="" name="password" id="password">
                       <div class="input-group-btn">
                           <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-lock"></i></button>
                       </div>
