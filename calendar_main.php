@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.1, J. Kenney 2015-2018
-  define('CALENDAR_VERSION', '4.1.20180228');
+  define('CALENDAR_VERSION', '4.1.20180302');
 
   # Determine what directories should be scanned for files.
   $COMPONENTS = array();
@@ -825,6 +825,40 @@
   # Remove the contents of <inst>...</inst> tags if not logged on
   if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
     $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
+  }
+
+  # Remove all <lock></lock> tags if no code provided
+  if (isset($_REQUEST['lock'])) {
+    $_SESSION['lock'] = $_REQUEST['lock'];
+  }
+  if (isset($_SESSION['lock'])) {
+    preg_match_all('/<lock[^>]+>/i', $contents, $injects);
+    foreach($injects[0] as $row => $inject_tag) {
+      preg_match_all('/code=("[^"]*")/i',$inject_tag, $tag_src);
+      $codes = str_replace('"','', $tag_src[1][0]);
+      $codes = str_replace("'",'', $codes);
+      $codes = explode(',', $codes);
+      foreach($codes as $rowi => $thiscode) {
+        if ($_SESSION['lock'] == trim($thiscode)) {
+          $contents = str_ireplace($injects[0][$row], '<unlock>', $contents);
+        }
+      }
+    }
+  }
+  if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
+    $unlocker = '
+<div class="jumbotron">
+<form method=POST>
+<label for="input-group"><font color="blue">Enter Password to See Hidden Content</font></label>
+<div class="input-group">
+  <input type="password" class="form-control" placeholder="" name="lock" id="lock">
+  <div class="input-group-btn">
+    <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-lock"></i></button>
+  </div>
+</div>
+</form>
+</div>';
+    $contents = preg_replace('/<lock[^>]*>([\s\S]*?)<\/lock[^>]*>/', $unlocker, $contents);
   }
 
   # Search for student and instructor tags
