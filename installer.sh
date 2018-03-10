@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 git clone https://github.com/jskenney/calendar.git
 rm -rf calendar/.git calendar/.gitmodules calendar/calendar-core
