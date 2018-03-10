@@ -18,4 +18,4 @@ read -p "Enter a default password (ex. mypassword): " dpass
 sed -i "s|SI123|$dcourse|g" calendar.php
 sed -i "s|Applied Something|$ddesc|g" calendar.php
 sed -i "s|mypassword|$dpass|g" calendar.php
-sed -i "s|this...|$RANDOM|g" calendar.php
+sed -i "s|impossible to guess|impossible to guess $RANDOM|g" calendar.php
