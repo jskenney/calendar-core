@@ -15,8 +15,8 @@ read -p "Enter the Course Number (ex. SI460): " dcourse
 read -p "Enter the Course Description (ex. Computer Graphics): " ddesc
 read -p "Enter a default password (ex. mypassword): " dpass
 
-sudo sed -i 's|SI123|$dcourse|g' calendar.php
-sudo sed -i 's|Applied Something|$ddesc|g' calendar.php
-sudo sed -i 's|mypassword|$dpass|g' calendar.php
-sudo sed -i 's|this...|$RANDOM|g' calendar.php
+sed -i 's|SI123|$dcourse|g' calendar.php
+sed -i 's|Applied Something|$ddesc|g' calendar.php
+sed -i 's|mypassword|$dpass|g' calendar.php
+sed -i 's|this...|$RANDOM|g' calendar.php
 
