@@ -19,4 +19,3 @@ sed -i 's|SI123|$dcourse|g' calendar.php
 sed -i 's|Applied Something|$ddesc|g' calendar.php
 sed -i 's|mypassword|$dpass|g' calendar.php
 sed -i 's|this...|$RANDOM|g' calendar.php
-
