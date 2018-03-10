@@ -1,4 +1,9 @@
 <?php require_once('calendar_css.php'); ?>
+<?php
+  if (!isset($CALENDAR_TOOL)) {
+    $CALENDAR_TOOL = "calendar_display";
+  }
+?>
 
     <!-- Fixed navbar -->
     <nav class="navbar navbar-default navbar-fixed-top">
@@ -54,7 +59,7 @@
 
             ?>
 
-            <li><a title="Calendar" href="calendar.php?show=calendar_display">
+            <li><a title="Calendar" href="calendar.php?show=<?php echo $CALENDAR_TOOL; ?>">
                 <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
                 </a></li>
 

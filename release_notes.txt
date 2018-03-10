@@ -146,3 +146,6 @@
 20180227 - BUG FIX: Scripts now work on older version of PHP (ext web)
 20180228 - An empty ADMIN password will now prevent logon
 20180309 - Upgraded jquery to 3.3.1
+20180310 - Added ability to define calendar renderer in config file, add
+           $CALENDAR_TOOL = 'calendar_display_alt';
+           To calendar.php to switch to alternate view.
