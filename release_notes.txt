@@ -145,3 +145,4 @@
               *
 20180227 - BUG FIX: Scripts now work on older version of PHP (ext web)
 20180228 - An empty ADMIN password will now prevent logon
+20180309 - Upgraded jquery to 3.3.1
