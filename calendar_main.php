@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.1, J. Kenney 2015-2018
-  define('CALENDAR_VERSION', '4.1.20180310');
+  define('CALENDAR_VERSION', '4.1.20180324');
 
   # Determine what directories should be scanned for files.
   $COMPONENTS = array();
@@ -458,30 +458,30 @@
       $MODE = $ext;
     }
     switch ($MODE) {
-      case "bz2": $ctype="application/x-bzip2"; break;
-      case "css": $ctype="text/css"; break;
-      case "gz": $ctype="application/x-gzip"; break;
-      case "gzip": $ctype="application/x-gzip"; break;
-      case "java": $ctype="text/x-java-source"; $attachment=""; break;
-      case "tgz": $ctype="application/x-compressed"; break;
-      case "pdf": $ctype="application/pdf"; $attachment=""; break;
-      case "zip": $ctype="application/zip"; break;
-      case "doc": $ctype="application/msword"; break;
-      case "docx": $ctype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"; break;
-      case "xls": $ctype="application/vnd.ms-excel"; break;
-      case "xlsx": $ctype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; break;
-      case "ppt": $ctype="application/vnd.ms-powerpoint"; break;
-      case "pptx": $ctype="application/vnd.openxmlformats-officedocument.presentationml.presentation"; break;
-      case "svg": $ctype="image/svg+xml"; $attachment=""; break;
-      case "gif": $ctype="image/gif"; $attachment=""; break;
-      case "png": $ctype="image/png"; $attachment=""; break;
-      case "jpe": $ctype="image/jpg"; $attachment=""; break;
-      case "jpeg": $ctype="image/jpg"; $attachment=""; break;
-      case "jpg": $ctype="image/jpg"; $attachment=""; break;
-      case "sql": $ctype="text/plain"; $attachment=""; break;
-      case "txt": $ctype="text/plain"; $attachment=""; break;
-      case "htm": $ctype="text/html"; $attachment=""; break;
-      case "html": $ctype="text/html"; $attachment=""; break;
+      case "bz2":   $ctype="application/x-bzip2"; break;
+      case "css":   $ctype="text/css"; break;
+      case "gz":    $ctype="application/x-gzip"; break;
+      case "gzip":  $ctype="application/x-gzip"; break;
+      case "java":  $ctype="text/x-java-source"; $attachment=""; break;
+      case "tgz":   $ctype="application/x-compressed"; break;
+      case "pdf":   $ctype="application/pdf"; $attachment=""; break;
+      case "zip":   $ctype="application/zip"; break;
+      case "doc":   $ctype="application/msword"; break;
+      case "docx":  $ctype="application/vnd.openxmlformats-officedocument.wordprocessingml.document"; break;
+      case "xls":   $ctype="application/vnd.ms-excel"; break;
+      case "xlsx":  $ctype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"; break;
+      case "ppt":   $ctype="application/vnd.ms-powerpoint"; break;
+      case "pptx":  $ctype="application/vnd.openxmlformats-officedocument.presentationml.presentation"; break;
+      case "svg":   $ctype="image/svg+xml"; $attachment=""; break;
+      case "gif":   $ctype="image/gif"; $attachment=""; break;
+      case "png":   $ctype="image/png"; $attachment=""; break;
+      case "jpe":   $ctype="image/jpg"; $attachment=""; break;
+      case "jpeg":  $ctype="image/jpg"; $attachment=""; break;
+      case "jpg":   $ctype="image/jpg"; $attachment=""; break;
+      case "sql":   $ctype="text/plain"; $attachment=""; break;
+      case "txt":   $ctype="text/plain"; $attachment=""; break;
+      case "htm":   $ctype="text/html"; $attachment=""; break;
+      case "html":  $ctype="text/html"; $attachment=""; break;
       case "htmls": $ctype="text/html"; $attachment=""; break;
       default: $ctype="application/octet-stream";
     }

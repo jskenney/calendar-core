@@ -149,3 +149,5 @@
 20180310 - Added ability to define calendar renderer in config file, add
            $CALENDAR_TOOL = 'calendar_display_alt';
            To calendar.php to switch to alternate view.
+20180324 - Modified logon to use Ajax so back button will no longer cause
+           issues after logging on.
