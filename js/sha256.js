@@ -182,5 +182,14 @@ function hashPassword() {
   var enteredPassword = document.getElementById("password").value;
   var results = Sha256.hash(enteredPassword+nonce);
   document.getElementById("password").value = results;
-  return true;
+  $.ajax({
+    url: "?",
+    data: {
+      password: results
+    },
+    success: function(result) {
+      location.reload();
+    }
+  });
+  return false;
 }
