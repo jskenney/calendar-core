@@ -499,25 +499,53 @@
   # Determine the valid categories for files
   $categories = build_types($BOX, $HTML, $LINK, $PDF, $PPT, $SRC);
 
+  # Set valid logon time (based on cookie auth)
+  if (!isset($LOGON_TIME)) {
+    $LOGON_TIME = 43200;
+  }
+
   # Perform Authentication
   session_start();
   if ($ADMIN != '') {
     if (isset($_REQUEST['password']) && $_REQUEST['password'] == $ADMIN) {
       $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
+      setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
+      $_COOKIE["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
+    } elseif (isset($_REQUEST['password'])
+        && isset($_COOKIE["cal4-$COURSE-nonce"])
+        && $_REQUEST['password'] == hash('sha256', $ADMIN.$_COOKIE["cal4-$COURSE-nonce"])) {
+      $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
+      setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
+      $_COOKIE["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
     } elseif (isset($_REQUEST['password'])
         && isset($_SESSION["cal4-$COURSE-nonce"])
         && $_REQUEST['password'] == hash('sha256', $ADMIN.$_SESSION["cal4-$COURSE-nonce"])) {
       $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
-    } elseif (isset($_REQUEST['password']) && isset($_SESSION["cal4-$COURSE"])) {
-      unset($_SESSION["cal4-$COURSE"]);
+      setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
+      $_COOKIE["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
+    } elseif (isset($_REQUEST['password']) && (isset($_SESSION["cal4-$COURSE"]) || isset($_COOKIE["cal4-$COURSE"]) )) {
+      if (isset($_SESSION["cal4-$COURSE"])) {
+        unset($_SESSION["cal4-$COURSE"]);
+      }
+      if (isset($_COOKIE["cal4-$COURSE"])) {
+        unset($_COOKIE["cal4-$COURSE"]);
+        setcookie("cal4-$COURSE", '', time()-3600);
+      }
     }
 
     # Verify that authentication code is correct
-    if (isset($_SESSION["cal4-$COURSE"])
+    if (isset($_COOKIE["cal4-$COURSE"])
+        && isset($_COOKIE["cal4-$COURSE-nonce"])
+        && $_COOKIE["cal4-$COURSE"]  == sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id())) {
+        $INSTRUCTOR = True;
+    } elseif (isset($_SESSION["cal4-$COURSE"])
         && $_SESSION["cal4-$COURSE"] == sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id())) {
         $INSTRUCTOR = True;
     } else {
-      $_SESSION["cal4-$COURSE-nonce"] = hash('sha256',"{".rand()."-".rand()."}");
+      $myNonce = hash('sha256',"{".rand()."-".rand()."}");
+      $_SESSION["cal4-$COURSE-nonce"] = $myNonce;
+      setcookie("cal4-$COURSE-nonce", $myNonce, time()+$LOGON_TIME);
+      $_COOKIE["cal4-$COURSE-nonce"] = $myNonce;
     }
 
     # Default to Student User Mode
