@@ -63,12 +63,12 @@
                 <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
                 </a></li>
 
-            <li><a title="Course Policy" href="calendar.php?load=policy">
-                <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+            <li><a title="Resources" href="calendar.php?load=resources">
+                <span class="glyphicon glyphicon-briefcase" aria-hidden="true"></span>
                 </a></li>
 
-            <li><a title="Resources" href="calendar.php?load=resources">
-                <span class="glyphicon glyphicon-inbox" aria-hidden="true"></span>
+            <li><a title="Information" href="calendar.php?load=policy">
+                <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
                 </a></li>
 
         <?php
@@ -91,12 +91,12 @@
             if (!isset($_REQUEST['answers'])) {
               $unlock_link = "calendar.php?type=" . $_REQUEST['type'] . "&event=" . $_REQUEST['event'] . "$key_link&answers=yes";
               echo PHP_EOL."<li><a title='Show Problem Answers' href='$unlock_link'>";
-              echo '<span class="glyphicon glyphicon-search" aria-hidden="true"></span>';
+              echo '<span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>';
               echo '</a></li>'.PHP_EOL;
             } else {
               $lock_link = "calendar.php?type=" . $_REQUEST['type'] . "&event=" . $_REQUEST['event'] . $key_link;
               echo PHP_EOL."<li><a title='Hide Problem Answers' href='$lock_link'>";
-              echo '<span class="glyphicon glyphicon-minus" aria-hidden="true"></span>';
+              echo '<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>';
               echo '</a></li>'.PHP_EOL;
             }
           }
