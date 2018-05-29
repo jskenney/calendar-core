@@ -35,14 +35,14 @@
                     <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
                   </a>
                   <ul class="dropdown-menu  scrollable-menu">
-                  <form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'
+                  <li><form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'
                     <div class="input-group">
                       <input type="password" class="form-control" placeholder="" name="password" id="password">
                       <div class="input-group-btn">
                           <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-lock"></i></button>
                       </div>
                     </div>
-                  </form>
+                  </form></li>
                 </ul>
                 </li>
               <?php
@@ -151,17 +151,17 @@
 
               # Print the page
               echo '<li class="dropdown-header">Options</li>'.PHP_EOL;
-              echo '<form method=post class="navbar-form navbar-left" role="search" target="_blank">'.PHP_EOL;
+              echo '<li><form method=post class="navbar-form navbar-left" role="search" target="_blank">'.PHP_EOL;
               echo '  <div class="input-group">'.PHP_EOL;
-              echo '    <input type="hidden" class="form-control" placeholder="Print" name="print" id="print">'.PHP_EOL;
+              echo '    <input type="hidden" class="form-control" name="print" id="print">'.PHP_EOL;
               echo '    <div class="input-group-btn">'.PHP_EOL;
               echo '        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-print"></i> Print</button>'.PHP_EOL;
               echo '    </div>'.PHP_EOL;
               echo '  </div>'.PHP_EOL;
-              echo '</form>'.PHP_EOL;
+              echo '</form></li>'.PHP_EOL;
 
               # Searchbox
-              echo '<form method=get class="navbar-form navbar-left" role="search">'.PHP_EOL;
+              echo '<li><form method=get class="navbar-form navbar-left" role="search">'.PHP_EOL;
               echo '  <div class="input-group">'.PHP_EOL;
               echo '    <input type="hidden" name="show" value="calendar_search">'.PHP_EOL;
               echo '    <input type="text" class="form-control" placeholder="Search" name="search" id="search">'.PHP_EOL;
@@ -169,29 +169,29 @@
               echo '        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-search"></i></button>'.PHP_EOL;
               echo '    </div>'.PHP_EOL;
               echo '  </div>'.PHP_EOL;
-              echo '</form>'.PHP_EOL;
+              echo '</form></li>'.PHP_EOL;
 
               # Logon (or show logoff page)
               if ($INSTRUCTOR) {
-                echo '<form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'.PHP_EOL;
+                echo '<li><form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'.PHP_EOL;
                 echo '  <div class="input-group">'.PHP_EOL;
-                echo '    <input type="hidden" class="form-control" placeholder="Password" name="password" id="password">'.PHP_EOL;
+                echo '    <input type="hidden" class="form-control" name="password" id="password">'.PHP_EOL;
                 echo '    <div class="input-group-btn">'.PHP_EOL;
                 echo '        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-lock"></i> Logoff</button>'.PHP_EOL;
                 echo '    </div>'.PHP_EOL;
                 echo '  </div>'.PHP_EOL;
-                echo '</form>'.PHP_EOL;
+                echo '</form></li>'.PHP_EOL;
                 echo "<li><a href='#'>Version ".CALENDAR_VERSION."</a></li>".PHP_EOL;
               } else {
                 #echo "<li><a href='#'>Logon as Administrator</a></li>";
-                echo '<form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'.PHP_EOL;
+                echo '<li><form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'.PHP_EOL;
                 echo '  <div class="input-group">'.PHP_EOL;
                 echo '    <input type="password" class="form-control" placeholder="Password" name="password" id="password">'.PHP_EOL;
                 echo '    <div class="input-group-btn">'.PHP_EOL;
                 echo '        <button class="btn btn-default" type="submit"><i class="glyphicon glyphicon-lock"></i></button>'.PHP_EOL;
                 echo '    </div>'.PHP_EOL;
                 echo '</div>'.PHP_EOL;
-                echo '</form>'.PHP_EOL;
+                echo '</form></li>'.PHP_EOL;
               }
 
               echo '</ul>'.PHP_EOL;
@@ -219,7 +219,7 @@
                           echo "<li><a href='calendar.php?type=$type&event=$cname'>$cname - ".$cdata['name']."</a></li>".PHP_EOL;
                         }
                       } else {
-                        echo "<li><a title='Material not online at this time' href='#'><font color='#AAAAAA'>$cname - ".$cdata['name']."</font></a></li>".PHP_EOL;
+                        echo "<li><a title='Material not online at this time' href='#'><span style='color=#AAAAAA'>$cname - ".$cdata['name']."</span></a></li>".PHP_EOL;
                       }
                     }
                   }

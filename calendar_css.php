@@ -114,8 +114,8 @@
     <!-- DataTables -->
     <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/datatables.net/datatables.min.js"></script>
 
-  </head>
-
   <title><?php echo $PAGE_TITLE; ?></title>
-
+  
+  </head>
+  
   <body>
