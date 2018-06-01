@@ -995,9 +995,48 @@ EOF;
     $contents = str_ireplace("<url value='$tag_src' default='$tag_default'>", $inject_data, $contents);
   }
 
-  # Find any <a name> tags that are used to define anchors
-  # This will be used to provide menus via the navbar
-  preg_match_all('/<a name=\"(.*?)\"\><\/a>/s', $contents, $navbar_menus);
+  ## Find any <a name> tags that are used to define anchors
+  ## This will be used to provide menus via the navbar
+  #preg_match_all('/<a name=\"(.*?)\"\><\/a>/s', $contents, $navbar_menus);
+  # As the <a name> attribute is obsolute in HTML5, we will impose the following:
+  #   All the internal page references will be in header tags <h1>...<h6>
+  #   The id attribute will be used.
+  # Thus, <h2 id="stuff"> would match and get a link created to stuff.
+  function findheaders($content){
+    $dom = new DOMDocument;
+    $dom->recover = true;
+    libxml_use_internal_errors(true);
+    $dom->loadHTML($content);
+    $xpath = new DOMXPath($dom);
+    $expression = '
+    (
+        //h1
+        |//h2
+        |//h3
+        |//h4
+        |//h5
+        |//h6
+    )';
+    $idarray = array();
+    $tagnamearray = array();
+    $tagvaluearray = array();
+    $elements = $xpath->query($expression);
+    foreach ($elements as $index => $element) {
+        if ($element->attributes->length > 0){ #check for there being attributes
+            foreach ($element->attributes as $attribute) {
+                if($attribute->name == 'id') {
+                     array_push($tagnamearray, $element->tagName);
+                     array_push($tagvaluearray, $attribute->value);
+                }
+            }
+        }
+    }
+    array_push($idarray, $tagnamearray, $tagvaluearray);
+    return $idarray;
+  }
+  #Then we call this new function
+  $navbar_menus = findheaders($contents);
+
 
   # What types of courses do you want to highlight
   # This is overridable in the calendar
