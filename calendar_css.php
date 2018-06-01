@@ -103,6 +103,24 @@
   }
 
 ?>
+      
+      
+<?php
+  echo "    <!-- Custom JavaScript based on user preferences -->".PHP_EOL;
+  if (isset($CUSTOMJS) && isset($_REQUEST['type']) && isset($CUSTOMJS[$_REQUEST['type']])) {
+    foreach ($CUSTOMJS[$_REQUEST['type']] as $ck => $crow) {
+      $cfilename = CALENDAR_PATH.$crow;
+      if (file_exists($cfilename)) {
+        echo "    <script type='text/javascript' src='$cfilename'></script>".PHP_EOL;
+      } else {
+        echo "    <!-- unable to find the file below from CUSTOMJS ({$_REQUEST['type']}) variable:".PHP_EOL;
+        echo "         <script type='text/javascript' src='$cfilename'></script>".PHP_EOL;
+        echo "    -->".PHP_EOL;
+      }
+    }
+  }
+
+?>
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -115,7 +133,6 @@
     <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/datatables.net/datatables.min.js"></script>
 
   <title><?php echo $PAGE_TITLE; ?></title>
-  
+
   </head>
-  
   <body>
