@@ -1002,6 +1002,8 @@ EOF;
   #   All the internal page references will be in header tags <h1>...<h6>
   #   The id attribute will be used.
   # Thus, <h2 id="stuff"> would match and get a link created to stuff.
+  # 20180604 since removing the <a name= match breaks backwards compatability, adding
+  #   this back in but 
   function findheaders($content){
     $dom = new DOMDocument;
     $dom->recover = true;
@@ -1016,18 +1018,32 @@ EOF;
         |//h4
         |//h5
         |//h6
+        |//a
     )';
     $idarray = array();
     $tagnamearray = array();
     $tagvaluearray = array();
     $elements = $xpath->query($expression);
+    $oldLinkMode = False;
     foreach ($elements as $index => $element) {
         if ($element->attributes->length > 0){ #check for there being attributes
             foreach ($element->attributes as $attribute) {
-                if($attribute->name == 'id') {
+                if($attribute->name == 'name'){ #check for the older <a name= stuff
+                    #This means we found an older style tag, so we when figure we can assume
+                    #  pretty much nothing about the structure of where the id tags show up.
+                    #  This is why we check for the older style tag first, then set a flag.
+                    #  We then just fall back to the previous behavior and ignore the headers.
+                    #  Yes, it is not very elegent but it works and preserves the previous
+                    #  functionality.
+                    $oldLinkMode = True;
+                    array_push($tagnamearray, $element->tagName);
+                    array_push($tagvaluearray, $attribute->value);
+                }
+                if($attribute->name == 'id' && $oldLinkMode == False) {
                      array_push($tagnamearray, $element->tagName);
                      array_push($tagvaluearray, $attribute->value);
                 }
+                
             }
         }
     }
