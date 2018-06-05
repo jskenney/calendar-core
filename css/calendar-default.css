@@ -270,4 +270,49 @@ code {
   .table-borderless > thead > tr > th {
       border: none;
     }
+
+/*added 20180531 by Dan Burnham to "fix" styling of the calendar table. 
+   By adding calendar as a class to the top level calendar table for each month,
+   this allows replacement of the:
+       width=20%
+       valigh=top 
+   in the <td> and <th> tags, which are obsolete in HTML5. */
+  table.table.table-striped.table-bordered.calendar > thead > tr > th,
+  table.table.table-striped.table-bordered.calendar > thead > tr > td,
+  table.table.table-striped.table-bordered.calendar > tbody > tr > th,
+  table.table.table-striped.table-bordered.calendar > tbody > tr > td,
+  table.table.table-striped.table-bordered.calendar > tfoot > tr > th,
+  table.table.table-striped.table-bordered.calendar > tfoot > tr > td {
+    width: 20%;
+    vertical-align: top;
+  }
+  /*This allows the removal of the valign=top from all <tr> elements. */
+  table.table.table-striped.table-bordered.calendar > thead > tr,
+  table.table.table-striped.table-bordered.calendar > tbody > tr,
+  table.table.table-striped.table-bordered.calendar > tfoot > tr {
+    vertical-align: top; 
+  }
+
+  /*This addition allows for spacer days in the begining of the month to have a background
+     color different than the "normal" days. */
+  table.table.table-striped.table-bordered.calendar > tbody > tr > td.spacer-day {
+    background-color: #eaeaea;
+  }
+
+  /*This addition sets the color for the current day on the calendar. */
+  table.table.table-striped.table-bordered.calendar > tbody > tr > td.today-day {
+    background-color: #fffebd;
+  }  
+
+  /*This addition sets the new div that replaced the center element to have text centered. */
+  table.table.table-striped.table-bordered.calendar > tbody > tr > td > div.content-center-day {
+    text-align: center;
+  }  
+
+  /*This addition set the text color to purple for the text on the date the item is to be revealed. */
+  .reveal-date-day {
+    color: purple;
+  }
+
+
 }

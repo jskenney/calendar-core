@@ -25,18 +25,18 @@
     $dow = date("w", mktime(0, 0, 0, $month, 1, $year));
     if ($dow == 0) {$dow = 7;}
     echo "<h4>$month_name $year</h4>";
-    echo "<table class='table table-striped table-bordered' width=99%><thead><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>";
+    echo "<table class='table table-striped table-bordered calendar'><thead><tr><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>";
     if ($WEEKENDS) {
       echo "<th>Saturday</th><th>Sunday</th>";
     }
-    echo "</thead><tbody>";
+    echo "</tr></thead><tbody>";
     $week_open = False;
     if (($dow != 1 && $dow < 6) || $WEEKENDS) {
-      echo "<tr valign=top>";
+      echo "<tr>";
       $week_open = True;
       for ($spacer = 1; ($spacer < $dow); $spacer++) {
         if ($spacer < 6 || ($WEEKENDS && $spacer < 8)) {
-          echo "<td width=$box_width% bgcolor='#eaeaea'>&nbsp; </td>";
+          echo "<td class='spacer-day'>&nbsp; </td>";
         }
       }
     }
@@ -49,22 +49,22 @@
          ) {
         if ($WEEKENDS || $dow < 6) {
           if (!$week_open) {
-            echo "<tr valign=top>";
+            echo "<tr>";
             $week_open = True;
           }
           if ($today['year'] == $year && $today['mon'] == $month && $today['mday'] == $day) {
-            echo "<td valign=top width=$box_width% bgcolor='#FFFEBD'><a name='today'></a>";
+            echo "<td class='today-day'><a name='today'></a>";
           } else {
-            echo "<td valign=top width=$box_width%>";
+            echo "<td>";
           }
           if ($INSTRUCTOR && isset($events_list[$month][$day]['type']) && isset($events_list[$month][$day]['type_num'])) {
-            echo "<a href=calendar.php?navbaronly=1&type=".$events_list[$month][$day]['type']."&event=".$events_list[$month][$day]['type_num'].">";
+            echo "<a href='calendar.php?navbaronly=1&type=".$events_list[$month][$day]['type']."&event=".$events_list[$month][$day]['type_num']."'>";
           }
           echo "$day ";
-          if ($INSTRUCTOR) {
+          if ($INSTRUCTOR && isset($events_list[$month][$day]['type']) && isset($events_list[$month][$day]['type_num'])) {
             echo "</a>";
           }
-          echo "<center>";
+          echo "<div class='content-center-day'>";
           if (isset($events_list[$month][$day])) {
             echo "<b>" . strtoupper($events_list[$month][$day]['type']) . ' ' . $events_list[$month][$day]['type_num'] . "</b><br>";
             foreach($box as $i => $btype) {
@@ -74,14 +74,14 @@
               }
               if ($btype == 'title') {
                 if (isset($events_list[$month][$day]['event']['box'][$btype])) {
-                  echo "<a href=calendar.php?type=" . $events_list[$month][$day]['type'] . "&event=" . $events_list[$month][$day]['type_num'] . ">";
+                  echo "<a href='calendar.php?type=" . $events_list[$month][$day]['type'] . "&event=" . $events_list[$month][$day]['type_num'] . "'>";
                   echo $events_list[$month][$day]['event']['name'];
                   echo "</a>";
                   if (!$events_list[$month][$day]['event']['box'][$btype]['visible']) {
                     $fyear= $events_list[$month][$day]['event']['box'][$btype]['year'];
                     $fmon = $events_list[$month][$day]['event']['box'][$btype]['month'];
                     $fday = $events_list[$month][$day]['event']['box'][$btype]['day'];
-                    echo " <font color='purple'>($fmon/$fday/$fyear)</font>";
+                    echo " <span class='reveal-date-day'>($fmon/$fday/$fyear)</span>";
                   }
                 } elseif (isset($events_list[$month][$day]['event']['name'])) {
                   echo $events_list[$month][$day]['event']['name'];
@@ -98,12 +98,12 @@
                     $key = $events_list[$month][$day]['event']['box'][$btype]['key'];
                     $ftype = $events_list[$month][$day]['event']['box'][$btype]['ftype'];
                     $fclass = $events_list[$month][$day]['event']['box'][$btype]['fclass'];
-                    echo "<a href=calendar.php?key=$key&type=$ftype&event=$fclass>$btype_desc</a>";
+                    echo "<a href='calendar.php?key=$key&type=$ftype&event=$fclass'>$btype_desc</a>";
                     if (!$events_list[$month][$day]['event']['box'][$btype]['visible']) {
                       $fyear= $events_list[$month][$day]['event']['box'][$btype]['year'];
                       $fmon = $events_list[$month][$day]['event']['box'][$btype]['month'];
                       $fday = $events_list[$month][$day]['event']['box'][$btype]['day'];
-                      echo " <font color='purple'>($fmon/$fday/$fyear)</font>";
+                      echo " <span class='reveal-date-day'>($fmon/$fday/$fyear)</span>";
                     }
 
                   }
@@ -125,14 +125,14 @@
                   }
                   if ($btype == 'title') {
                     if (isset($new_eventsdata['event']['box'][$btype])) {
-                      echo "<a href=calendar.php?type=" . $new_eventsdata['type'] . "&event=" . $new_eventsdata['type_num'] . ">";
+                      echo "<a href='calendar.php?type=" . $new_eventsdata['type'] . "&event=" . $new_eventsdata['type_num'] . "'>";
                       echo $new_eventsdata['event']['name'];
                       echo "</a>";
                       if (!$new_eventsdata['event']['box'][$btype]['visible']) {
                         $fyear= $new_eventsdata['event']['box'][$btype]['year'];
                         $fmon = $new_eventsdata['event']['box'][$btype]['month'];
                         $fday = $new_eventsdata['event']['box'][$btype]['day'];
-                        echo " <font color='purple'>($fmon/$fday/$fyear)</font>";
+                        echo " <span class='reveal-date-day'>($fmon/$fday/$fyear)</span>";
                       }
                     } elseif (isset($new_eventsdata['event']['name'])) {
                       echo $new_eventsdata['event']['name'];
@@ -149,12 +149,12 @@
                         $key = $new_eventsdata['event']['box'][$btype]['key'];
                         $ftype = $new_eventsdata['event']['box'][$btype]['ftype'];
                         $fclass = $new_eventsdata['event']['box'][$btype]['fclass'];
-                        echo "<a href=calendar.php?key=$key&type=$ftype&event=$fclass>$btype_desc</a>";
+                        echo "<a href='calendar.php?key=$key&type=$ftype&event=$fclass'>$btype_desc</a>";
                         if (!$new_eventsdata['event']['box'][$btype]['visible']) {
                           $fyear= $new_eventsdata['event']['box'][$btype]['year'];
                           $fmon = $new_eventsdata['event']['box'][$btype]['month'];
                           $fday = $new_eventsdata['event']['box'][$btype]['day'];
-                          echo " <font color='purple'>($fmon/$fday/$fyear)</font>";
+                          echo " <span class='reveal-date-day'>($fmon/$fday/$fyear)</span>";
                         }
                       }
                       echo "<br>";
@@ -168,7 +168,7 @@
           } else {
             echo "<br><br><br><br><br><br><br><br>";
           }
-          echo "</center></td>";
+          echo "</div></td>";
         }
         $dow++;
         if ($dow > 7) {
