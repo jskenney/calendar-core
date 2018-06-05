@@ -1003,7 +1003,10 @@ EOF;
   #   The id attribute will be used.
   # Thus, <h2 id="stuff"> would match and get a link created to stuff.
   # 20180604 since removing the <a name= match breaks backwards compatability, adding
-  #   this back in but 
+  #   this back in
+  # 20180605 however, even though it is back in, still would like to notify the instructor
+  #   that they are using a depreciated method and should update their content.
+  #   Added a message that only appears if($INSTRUCTOR) that tells them which ones are old.
   function findheaders($content){
     $dom = new DOMDocument;
     $dom->recover = true;
@@ -1025,6 +1028,8 @@ EOF;
     $tagvaluearray = array();
     $elements = $xpath->query($expression);
     $oldLinkMode = False;
+    $oldLinkModeValue = ''; #variable for holding a found <a name='value' for later...
+    $oldLinkModeMessage = '<ol>'; #variable for holding the generated warning messages
     foreach ($elements as $index => $element) {
         if ($element->attributes->length > 0){ #check for there being attributes
             foreach ($element->attributes as $attribute) {
@@ -1032,27 +1037,39 @@ EOF;
                     #This means we found an older style tag, so we when figure we can assume
                     #  pretty much nothing about the structure of where the id tags show up.
                     #  This is why we check for the older style tag first, then set a flag.
-                    #  We then just fall back to the previous behavior and ignore the headers.
-                    #  Yes, it is not very elegent but it works and preserves the previous
-                    #  functionality.
-                    $oldLinkMode = True;
+                    #  We then log each occurence of the old style headers to display later.
+                    $oldLinkMode = True; #once set to True never change
+                    $oldLinkModeValue = $attribute->value;
+                    $oldLinkModeMessage = $oldLinkModeMessage . '<li>Tag type: <b>' . $element->tagName . '</b> &nbsp; Tag value: <b>' . $attribute->value . '</b></li>';
                     array_push($tagnamearray, $element->tagName);
                     array_push($tagvaluearray, $attribute->value);
                 }
-                if($attribute->name == 'id' && $oldLinkMode == False) {
-                     array_push($tagnamearray, $element->tagName);
-                     array_push($tagvaluearray, $attribute->value);
+                if($attribute->name == 'id') {
+                    if($attribute->value == $oldLinkModeValue && $oldLinkMode == True){
+                        #we check the value if in old link mode and if it matches then we
+                        #proceed to just skip this entry to not have duplicate links in the
+                        #drop down menu.
+                    } else {
+                        array_push($tagnamearray, $element->tagName);
+                        array_push($tagvaluearray, $attribute->value);
+                    }    
                 }
-                
             }
         }
     }
+    if ($oldLinkMode == True){
+        #add warning message content and close the warning message tags
+        $oldLinkModeMessage = '<div style="color:red;">WARNING: You are using the <em>old</em> style of internal document links.<br>Here is a list of the ones found in this document:' . $oldLinkModeMessage . '</ol></div>';
+    }
     array_push($idarray, $tagnamearray, $tagvaluearray);
-    return $idarray;
+    return array($idarray,$oldLinkMode,$oldLinkModeMessage);
   }
   #Then we call this new function
-  $navbar_menus = findheaders($contents);
-
+  list($navbar_menus,$headerWarningFlag,$headerWarningMessage) = findheaders($contents);
+  #Then check if we should add the warningMessage
+  if ($headerWarningFlag && $INSTRUCTOR){ #if so, add it at the top of the content
+      $contents = $headerWarningMessage . $contents;
+  }
 
   # What types of courses do you want to highlight
   # This is overridable in the calendar
