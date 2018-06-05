@@ -773,6 +773,9 @@
   if (!isset($PAGE_MODIFY['coursename']) && isset($COURSENAME)) {
     $PAGE_MODIFY['coursename'] = $COURSENAME;
   }
+  if (!isset($PAGE_MODIFY['coursenamefull']) && isset($COURSENAMEFULL)) {
+    $PAGE_MODIFY['coursenamefull'] = $COURSENAMEFULL;
+  }
   if (!isset($PAGE_MODIFY['title']) && isset($navbar_display)) {
     $PAGE_MODIFY['title'] = $navbar_display;
   }
@@ -1074,7 +1077,7 @@ EOF;
   # What types of courses do you want to highlight
   # This is overridable in the calendar
   if (!isset($NAVBAR_DROPDOWNS)) {
-    $NAVBAR_DROPDOWNS = array('class' => 'glyphicon-apple',
+    $NAVBAR_DROPDOWNS = array('class' => 'glyphicon-blackboard',
                               'lab' => 'glyphicon-knight');
   }
 
