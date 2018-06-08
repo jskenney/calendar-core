@@ -1055,7 +1055,7 @@ EOF;
                     } else {
                         array_push($tagnamearray, $element->tagName);
                         array_push($tagvaluearray, $attribute->value);
-                    }    
+                    }
                 }
             }
         }
@@ -1070,7 +1070,7 @@ EOF;
   #Then we call this new function
   list($navbar_menus,$headerWarningFlag,$headerWarningMessage) = findheaders($contents);
   #Then check if we should add the warningMessage
-  if ($headerWarningFlag && $INSTRUCTOR){ #if so, add it at the top of the content
+  if ($headerWarningFlag && $INSTRUCTOR && !isset($IGNORE_A_TAG_WARNING)){ #if so, add it at the top of the content
       $contents = $headerWarningMessage . $contents;
   }
 
