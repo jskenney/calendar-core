@@ -214,7 +214,7 @@
                     foreach ($events[$type] as $cname => $cdata) {
                       if (isset($cdata['box']['title']) || $INSTRUCTOR) {
                         if (isset($_REQUEST['type']) && isset($_REQUEST['event']) && $_REQUEST['type'] == $type && $_REQUEST['event'] == $cname) {
-                          echo "<li><a href='calendar.php?type=$type&event=$cname'><font color='black'><b>$cname - ".$cdata['name']."</b></font></a></li>".PHP_EOL;
+                          echo "<li><a href='calendar.php?type=$type&event=$cname'><b style='color:black'>$cname - ".$cdata['name']."</b></a></li>".PHP_EOL;
                         } else {
                           echo "<li><a href='calendar.php?type=$type&event=$cname'>$cname - ".$cdata['name']."</a></li>".PHP_EOL;
                         }
