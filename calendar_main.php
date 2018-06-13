@@ -880,7 +880,7 @@
     $unlocker = '
 <div class="jumbotron">
 <form method=POST>
-<label for="input-group"><font color="blue">Enter Password to See Hidden Content</font></label>
+<label for="input-group"><span style="color:blue">Enter Password to See Hidden Content</span></label>
 <div class="input-group">
   <input type="password" class="form-control" placeholder="" name="lock" id="lock">
   <div class="input-group-btn">

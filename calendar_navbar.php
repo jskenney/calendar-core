@@ -125,7 +125,7 @@
                   if (strpos($item, 'pagename:') === False) {
                     $item_desc = ucfirst($item);
                     $item_desc = str_ireplace("-", " ", $item_desc);
-                    echo "<li><a href='#$item'>$item_desc</a></li>".PHP_EOL;
+                    echo '<li><a href="#' . $item . '">' . $item_desc . '</a></li>'.PHP_EOL;
                     $navbar_menu_div = True;
                   }
                 }
