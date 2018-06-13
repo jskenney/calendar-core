@@ -125,7 +125,9 @@
                   if (strpos($item, 'pagename:') === False) {
                     $item_desc = ucfirst($item);
                     $item_desc = str_ireplace("-", " ", $item_desc);
-                    echo "<li><a href='#$item'>$item_desc</a></li>".PHP_EOL;
+                    #$item_desc = str_ireplace("'", "&#39;", $item_desc);
+                    #$item = str_ireplace("'", "&#39;", $item_desc);
+                    echo '<li><a href="#' . $item . '">' . $item_desc . '</a></li>'.PHP_EOL;
                     $navbar_menu_div = True;
                   }
                 }
@@ -214,7 +216,7 @@
                     foreach ($events[$type] as $cname => $cdata) {
                       if (isset($cdata['box']['title']) || $INSTRUCTOR) {
                         if (isset($_REQUEST['type']) && isset($_REQUEST['event']) && $_REQUEST['type'] == $type && $_REQUEST['event'] == $cname) {
-                          echo "<li><a href='calendar.php?type=$type&event=$cname'><b style='color:black'>$cname - ".$cdata['name']."</b></a></li>".PHP_EOL;
+                          echo "<li><a href='calendar.php?type=$type&event=$cname'><font color='black'><b>$cname - ".$cdata['name']."</b></font></a></li>".PHP_EOL;
                         } else {
                           echo "<li><a href='calendar.php?type=$type&event=$cname'>$cname - ".$cdata['name']."</a></li>".PHP_EOL;
                         }
