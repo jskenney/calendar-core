@@ -1047,26 +1047,61 @@ EOF;
                     array_push($tagnamearray, $element->tagName);
                     array_push($tagvaluearray, $attribute->value);
                 }
-                if($attribute->name == 'id') {
-                    if($attribute->value == $oldLinkModeValue && $oldLinkMode == True){
-                        #we check the value if in old link mode and if it matches then we
-                        #proceed to just skip this entry to not have duplicate links in the
-                        #drop down menu.
-                    } else {
-                        array_push($tagnamearray, $element->tagName);
-                        array_push($tagvaluearray, $attribute->value);
+                else {
+                    #20180614 Burnham
+                    # Refactored this code to clean it up.
+                    # This was initiated due to finding additional entries in the navbar menu for a class
+                    # the reason for which was determined to be <a> tags with an id set. While documenting the
+                    # code to resolve this issue, another potential logic issue was found.
+                    # When it comes down to it, the only time we want a link in the navbar menu is when there
+                    # is an id in a header tag or a name in an anchor tag.
+                    
+                    # Code now does the following:
+                    #   1) Checks to see if the attribute being looked at is "id". Thus name is ignored
+                    #      (well, not really, it is handled in the if branch of this if..else statement),
+                    #      class is ignored as well as any "data-" type entries or anything else.
+                    #      TL:DR --> if the attribute name is not "id" we dont care.
+                    #   2) Next we check if the id's value is the same as the most recent name's value.
+                    #      This way we dont add duplicate entries for links in the navbar.
+                    #   3) Then we determine if the tag type is <a>. We do this because if an anchor tag
+                    #      exists in the document with an id value then it will get added to the navbar list.
+                    #      Also, if an <a> tag exists with a name= attribute AND an id= attribute but the 
+                    #      values of those two are not the same then another entry will be added to the navbar
+                    #      list, which is not desired behavior. Only <h[1-6]> tags with id's should be added.
+                    #      TL:DR --> if attribute type is anchor and it has an id attribute we don't care.
+                    #   4) Finally, if it gets this far, it is a header tag with an id. We add it to the
+                    #      navbar list.
+                    if ($attribute->name == 'id'){
+                        if($attribute->value == $oldLinkModeValue && $oldLinkMode == True){
+                            #we check the value if in old link mode and if it matches then we proceed to just
+                            #skip this entry to not have duplicate links in the drop down menu.
+                            continue 1; #We were implicitly doing this anyway so might as well be explicit.
+                        }
+                        elseif ($element->tagName == 'a'){
+                            #We dont care about any anchor tags with id values.
+                            continue 1;
+                        }
+                        else {
+                            array_push($tagnamearray, $element->tagName);
+                            array_push($tagvaluearray, $attribute->value);
+                        }
+                    }
+                    else {
+                        # dont care! The attribute is not an id.
+                        continue 1;
                     }
                 }
-            }
-        }
-    }
+            } #end iteration through all the attributes of an element.
+        } #end check if there are attributes to an element.
+    } #end iteration through found elements in document.
     if ($oldLinkMode == True){
         #add warning message content and close the warning message tags
         $oldLinkModeMessage = '<div style="color:red;">WARNING: You are using the <em>old</em> style of internal document links.<br>Here is a list of the ones found in this document:' . $oldLinkModeMessage . '</ol></div>';
     }
     array_push($idarray, $tagnamearray, $tagvaluearray);
     return array($idarray,$oldLinkMode,$oldLinkModeMessage);
-  }
+  } #end function findheaders
+  
   #Then we call this new function
   list($navbar_menus,$headerWarningFlag,$headerWarningMessage) = findheaders($contents);
   #Then check if we should add the warningMessage
