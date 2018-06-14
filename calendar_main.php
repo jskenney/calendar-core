@@ -849,6 +849,8 @@
         $inject_data = str_ireplace('>', '&gt;', $inject_data);
         $contents = str_ireplace('<codeinject src="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<codeinject src='$tag_src'>", $inject_data, $contents);
+        $contents = str_ireplace('<codeinject src="'.$tag_src.'"/>', $inject_data, $contents);
+        $contents = str_ireplace("<codeinject src='$tag_src'"."/>", $inject_data, $contents);
       }
     }
   }
