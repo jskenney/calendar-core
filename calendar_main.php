@@ -855,9 +855,61 @@
     }
   }
 
+  # Addition to allow automatic reveal of the shown in class examples, etc AFTER the days
+  # classes have occured.
+  # First we check the current year vs the course year - if greater no reason to continue
+  # Then we check the current month vs the requested asset month - if greater no reason to continue.
+  # The we check the current day vs the requested asset day - if greater no reason to continue.
+  # Lastly we check the current hour vs the set reveal hour - if greater no reason to continue.
+  # If all these fail, then we strip out the revealed content.
+  # Uses the new tag <postmeeting>
+  # The time to reveal is from the $REVEALHOUR variable located in calendar.php
+  
+  if ((!isset($INSTRUCTOR) || !$INSTRUCTOR) && isset($REVEALHOUR)) {
+      $today_date_time = getdate();
+      if (
+            ($today_date_time['year'] > $YEAR)
+         || 
+         ( 
+            ($today_date_time['year'] >= $YEAR) 
+            && 
+            ($today_date_time['mon'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
+         ) 
+         || 
+         (
+            ($today_date_time['year'] == $YEAR)
+            && 
+            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
+            && 
+            ($today_date_time['mday'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
+         ) 
+         ||
+         (
+            ($today_date_time['year'] == $YEAR)
+            && 
+            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0]) 
+            &&
+            ($today_date_time['mday'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
+            && 
+            ($today_date_time['hours'] >= $REVEALHOUR)
+          )
+         ){
+        #show the content
+        echo "Would show content";
+        $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '\1', $contents);
+      }
+      else {
+        #DO NOT show the content
+        $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '', $contents);
+      }
+  }
+
   # Remove the contents of <inst>...</inst> tags if not logged on
   if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
     $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
+  }
+  else {
+    $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '\1', $contents);  
   }
 
   # Remove all <lock></lock> tags if no code provided
