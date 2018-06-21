@@ -975,6 +975,7 @@
     preg_match_all('/theme=("[^"]*")/i',$ace[0][$i], $ace_theme);
     preg_match_all('/readonly=("[^"]*")/i',$ace[0][$i], $ace_readonly);
     preg_match_all('/nolinenumbers=("[^"]*")/i',$ace[0][$i], $ace_nolinenumbers);
+    preg_match_all('/textwrap=("[^"]*")/i',$ace[0][$i], $ace_textwrap);
     $ace_readonly_flag = '//';
     if (isset($ace_readonly[1][0])) {
       $ace_readonly_flag = '';
@@ -982,6 +983,10 @@
     $ace_nolinenumbers_flag = '//';
     if (isset($ace_nolinenumbers[1][0])) {
       $ace_nolinenumbers_flag = '';
+    }
+    $ace_textwrap_flag = '//';
+    if (isset($ace_textwrap[1][0]) && (substr($ace_textwrap[1][0],1,-1)=='true')) {
+      $ace_textwrap_flag = '';
     }
     if (isset($ace_name[1][0])) {
       $ace_name = substr($ace_name[1][0],1,-1);
@@ -1014,6 +1019,7 @@
     var $ace_name = ace.edit("$ace_name");
     $ace_name.setTheme("ace/theme/$ace_theme");
     $ace_name.getSession().setMode("ace/mode/$ace_mode");
+    $ace_textwrap_flag$ace_name.getSession().setUseWrapMode(true);
     $ace_readonly_flag$ace_name.setReadOnly(true);
     $ace_nolinenumbers_flag$ace_name.renderer.setShowGutter(false);
     function showHTMLInIFrame$ace_name() {
