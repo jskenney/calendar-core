@@ -814,7 +814,7 @@
     # from $PAGE_MODIFY into them.
     preg_match_all('/<replace[^>]+>/i', $contents, $injects);
     foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/value=("[^"]*")/i',$inject_tag, $tag_src);
+      preg_match_all('/value=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($PAGE_MODIFY[$tag_src])) {
         $inject_data = $PAGE_MODIFY[$tag_src];
@@ -822,26 +822,34 @@
         $inject_data = str_ireplace('>', '&gt;', $inject_data);
         $contents = str_ireplace('<replace value="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<replace value='$tag_src'>", $inject_data, $contents);
+        $contents = str_ireplace('<replace value="'.$tag_src.'"/>', $inject_data, $contents);
+        $contents = str_ireplace("<replace value='$tag_src'"."/>", $inject_data, $contents);
+        $contents = str_ireplace('<replace value="'.$tag_src.'" />', $inject_data, $contents);
+        $contents = str_ireplace("<replace value='$tag_src'"." />", $inject_data, $contents);
       }
     }
 
     # Search for <inject src=""> tags and directly copy the contents into this tag area
     preg_match_all('/<inject[^>]+>/i', $contents, $injects);
     foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
+      preg_match_all('/src=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($other[$tag_src])) {
         $inject_data = file_get_contents($other[$tag_src]['actual']);
         $inject_src[] = $tag_src;
         $contents = str_ireplace('<inject src="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<inject src='$tag_src'>", $inject_data, $contents);
+        $contents = str_ireplace('<inject src="'.$tag_src.'"/>', $inject_data, $contents);
+        $contents = str_ireplace("<inject src='$tag_src'"."/>", $inject_data, $contents);
+        $contents = str_ireplace('<inject src="'.$tag_src.'" />', $inject_data, $contents);
+        $contents = str_ireplace("<inject src='$tag_src'"." />", $inject_data, $contents);
       }
     }
 
     # Search for <codeinject src=""> tags and directly copy the contents into this tag area
     preg_match_all('/<codeinject[^>]+>/i', $contents, $injects);
     foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
+      preg_match_all('/src=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($other[$tag_src])) {
         $inject_data = file_get_contents($other[$tag_src]['actual']);
@@ -851,6 +859,8 @@
         $contents = str_ireplace("<codeinject src='$tag_src'>", $inject_data, $contents);
         $contents = str_ireplace('<codeinject src="'.$tag_src.'"/>', $inject_data, $contents);
         $contents = str_ireplace("<codeinject src='$tag_src'"."/>", $inject_data, $contents);
+        $contents = str_ireplace('<codeinject src="'.$tag_src.'" />', $inject_data, $contents);
+        $contents = str_ireplace("<codeinject src='$tag_src'"." />", $inject_data, $contents);
       }
     }
   }
@@ -1074,6 +1084,9 @@ EOF;
     $dom = new DOMDocument;
     $dom->recover = true;
     libxml_use_internal_errors(true);
+    if ($content == ""){
+        return;
+    }
     $dom->loadHTML($content);
     $xpath = new DOMXPath($dom);
     $expression = '
