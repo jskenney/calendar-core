@@ -1084,6 +1084,9 @@ EOF;
     $dom = new DOMDocument;
     $dom->recover = true;
     libxml_use_internal_errors(true);
+    if ($content == ""){
+        return;
+    }
     $dom->loadHTML($content);
     $xpath = new DOMXPath($dom);
     $expression = '
