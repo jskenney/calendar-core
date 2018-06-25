@@ -1038,7 +1038,7 @@
     $ace_name.on("input", showHTMLInIFrame$ace_name);
     showHTMLInIFrame$ace_name();
 </script>
-<style type="text/css" media="screen">
+<style type="text/css">
    #$ace_name { height: $ace_height; }
 </style>
 EOF;
