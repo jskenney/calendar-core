@@ -987,11 +987,11 @@
     preg_match_all('/nolinenumbers=("[^"]*")/i',$ace[0][$i], $ace_nolinenumbers);
     preg_match_all('/textwrap=("[^"]*")/i',$ace[0][$i], $ace_textwrap);
     $ace_readonly_flag = '//';
-    if (isset($ace_readonly[1][0])) {
+    if (isset($ace_readonly[1][0]) && (substr($ace_readonly[1][0],1,-1)=='true')) {
       $ace_readonly_flag = '';
     }
-    $ace_nolinenumbers_flag = '//';
-    if (isset($ace_nolinenumbers[1][0])) {
+    $ace_nolinenumbers_flag = '//'; #default is to have line numbers
+    if (isset($ace_nolinenumbers[1][0]) && (substr($ace_nolinenumbers[1][0],1,-1)=='true')) {
       $ace_nolinenumbers_flag = '';
     }
     $ace_textwrap_flag = '//';
