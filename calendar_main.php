@@ -814,7 +814,7 @@
     # from $PAGE_MODIFY into them.
     preg_match_all('/<replace[^>]+>/i', $contents, $injects);
     foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/value=("[^"]*")/i',$inject_tag, $tag_src);
+      preg_match_all('/value=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($PAGE_MODIFY[$tag_src])) {
         $inject_data = $PAGE_MODIFY[$tag_src];
@@ -822,26 +822,34 @@
         $inject_data = str_ireplace('>', '&gt;', $inject_data);
         $contents = str_ireplace('<replace value="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<replace value='$tag_src'>", $inject_data, $contents);
+        $contents = str_ireplace('<replace value="'.$tag_src.'"/>', $inject_data, $contents);
+        $contents = str_ireplace("<replace value='$tag_src'"."/>", $inject_data, $contents);
+        $contents = str_ireplace('<replace value="'.$tag_src.'" />', $inject_data, $contents);
+        $contents = str_ireplace("<replace value='$tag_src'"." />", $inject_data, $contents);
       }
     }
 
     # Search for <inject src=""> tags and directly copy the contents into this tag area
     preg_match_all('/<inject[^>]+>/i', $contents, $injects);
     foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
+      preg_match_all('/src=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($other[$tag_src])) {
         $inject_data = file_get_contents($other[$tag_src]['actual']);
         $inject_src[] = $tag_src;
         $contents = str_ireplace('<inject src="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<inject src='$tag_src'>", $inject_data, $contents);
+        $contents = str_ireplace('<inject src="'.$tag_src.'"/>', $inject_data, $contents);
+        $contents = str_ireplace("<inject src='$tag_src'"."/>", $inject_data, $contents);
+        $contents = str_ireplace('<inject src="'.$tag_src.'" />', $inject_data, $contents);
+        $contents = str_ireplace("<inject src='$tag_src'"." />", $inject_data, $contents);
       }
     }
 
     # Search for <codeinject src=""> tags and directly copy the contents into this tag area
     preg_match_all('/<codeinject[^>]+>/i', $contents, $injects);
     foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/src=("[^"]*")/i',$inject_tag, $tag_src);
+      preg_match_all('/src=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($other[$tag_src])) {
         $inject_data = file_get_contents($other[$tag_src]['actual']);
@@ -849,13 +857,69 @@
         $inject_data = str_ireplace('>', '&gt;', $inject_data);
         $contents = str_ireplace('<codeinject src="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<codeinject src='$tag_src'>", $inject_data, $contents);
+        $contents = str_ireplace('<codeinject src="'.$tag_src.'"/>', $inject_data, $contents);
+        $contents = str_ireplace("<codeinject src='$tag_src'"."/>", $inject_data, $contents);
+        $contents = str_ireplace('<codeinject src="'.$tag_src.'" />', $inject_data, $contents);
+        $contents = str_ireplace("<codeinject src='$tag_src'"." />", $inject_data, $contents);
       }
     }
+  }
+
+  # Addition to allow automatic reveal of the shown in class examples, etc AFTER the days
+  # classes have occured.
+  # First we check the current year vs the course year - if greater no reason to continue
+  # Then we check the current month vs the requested asset month - if greater no reason to continue.
+  # The we check the current day vs the requested asset day - if greater no reason to continue.
+  # Lastly we check the current hour vs the set reveal hour - if greater no reason to continue.
+  # If all these fail, then we strip out the revealed content.
+  # Uses the new tag <postmeeting>
+  # The time to reveal is from the $REVEALHOUR variable located in calendar.php
+  
+  if ((!isset($INSTRUCTOR) || !$INSTRUCTOR) && isset($REVEALHOUR)) {
+      $today_date_time = getdate();
+      if (
+            ($today_date_time['year'] > $YEAR)
+         || 
+         ( 
+            ($today_date_time['year'] >= $YEAR) 
+            && 
+            ($today_date_time['mon'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
+         ) 
+         || 
+         (
+            ($today_date_time['year'] == $YEAR)
+            && 
+            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
+            && 
+            ($today_date_time['mday'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
+         ) 
+         ||
+         (
+            ($today_date_time['year'] == $YEAR)
+            && 
+            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0]) 
+            &&
+            ($today_date_time['mday'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
+            && 
+            ($today_date_time['hours'] >= $REVEALHOUR)
+          )
+         ){
+        #show the content
+        echo "Would show content";
+        $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '\1', $contents);
+      }
+      else {
+        #DO NOT show the content
+        $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '', $contents);
+      }
   }
 
   # Remove the contents of <inst>...</inst> tags if not logged on
   if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
     $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
+  }
+  else {
+    $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '\1', $contents);  
   }
 
   # Remove all <lock></lock> tags if no code provided
@@ -880,7 +944,7 @@
     $unlocker = '
 <div class="jumbotron">
 <form method=POST>
-<label for="input-group"><font color="blue">Enter Password to See Hidden Content</font></label>
+<label for="input-group"><span style="color:blue">Enter Password to See Hidden Content</span></label>
 <div class="input-group">
   <input type="password" class="form-control" placeholder="" name="lock" id="lock">
   <div class="input-group-btn">
@@ -921,13 +985,18 @@
     preg_match_all('/theme=("[^"]*")/i',$ace[0][$i], $ace_theme);
     preg_match_all('/readonly=("[^"]*")/i',$ace[0][$i], $ace_readonly);
     preg_match_all('/nolinenumbers=("[^"]*")/i',$ace[0][$i], $ace_nolinenumbers);
+    preg_match_all('/textwrap=("[^"]*")/i',$ace[0][$i], $ace_textwrap);
     $ace_readonly_flag = '//';
-    if (isset($ace_readonly[1][0])) {
+    if (isset($ace_readonly[1][0]) && (substr($ace_readonly[1][0],1,-1)=='true')) {
       $ace_readonly_flag = '';
     }
-    $ace_nolinenumbers_flag = '//';
-    if (isset($ace_nolinenumbers[1][0])) {
+    $ace_nolinenumbers_flag = '//'; #default is to have line numbers
+    if (isset($ace_nolinenumbers[1][0]) && (substr($ace_nolinenumbers[1][0],1,-1)=='true')) {
       $ace_nolinenumbers_flag = '';
+    }
+    $ace_textwrap_flag = '//';
+    if (isset($ace_textwrap[1][0]) && (substr($ace_textwrap[1][0],1,-1)=='true')) {
+      $ace_textwrap_flag = '';
     }
     if (isset($ace_name[1][0])) {
       $ace_name = substr($ace_name[1][0],1,-1);
@@ -960,6 +1029,7 @@
     var $ace_name = ace.edit("$ace_name");
     $ace_name.setTheme("ace/theme/$ace_theme");
     $ace_name.getSession().setMode("ace/mode/$ace_mode");
+    $ace_textwrap_flag$ace_name.getSession().setUseWrapMode(true);
     $ace_readonly_flag$ace_name.setReadOnly(true);
     $ace_nolinenumbers_flag$ace_name.renderer.setShowGutter(false);
     function showHTMLInIFrame$ace_name() {
@@ -968,7 +1038,7 @@
     $ace_name.on("input", showHTMLInIFrame$ace_name);
     showHTMLInIFrame$ace_name();
 </script>
-<style type="text/css" media="screen">
+<style type="text/css">
    #$ace_name { height: $ace_height; }
 </style>
 EOF;
@@ -1014,6 +1084,9 @@ EOF;
     $dom = new DOMDocument;
     $dom->recover = true;
     libxml_use_internal_errors(true);
+    if ($content == ""){
+        return;
+    }
     $dom->loadHTML($content);
     $xpath = new DOMXPath($dom);
     $expression = '
@@ -1047,30 +1120,65 @@ EOF;
                     array_push($tagnamearray, $element->tagName);
                     array_push($tagvaluearray, $attribute->value);
                 }
-                if($attribute->name == 'id') {
-                    if($attribute->value == $oldLinkModeValue && $oldLinkMode == True){
-                        #we check the value if in old link mode and if it matches then we
-                        #proceed to just skip this entry to not have duplicate links in the
-                        #drop down menu.
-                    } else {
-                        array_push($tagnamearray, $element->tagName);
-                        array_push($tagvaluearray, $attribute->value);
-                    }    
+                else {
+                    #20180614 Burnham
+                    # Refactored this code to clean it up.
+                    # This was initiated due to finding additional entries in the navbar menu for a class
+                    # the reason for which was determined to be <a> tags with an id set. While documenting the
+                    # code to resolve this issue, another potential logic issue was found.
+                    # When it comes down to it, the only time we want a link in the navbar menu is when there
+                    # is an id in a header tag or a name in an anchor tag.
+                    
+                    # Code now does the following:
+                    #   1) Checks to see if the attribute being looked at is "id". Thus name is ignored
+                    #      (well, not really, it is handled in the if branch of this if..else statement),
+                    #      class is ignored as well as any "data-" type entries or anything else.
+                    #      TL:DR --> if the attribute name is not "id" we dont care.
+                    #   2) Next we check if the id's value is the same as the most recent name's value.
+                    #      This way we dont add duplicate entries for links in the navbar.
+                    #   3) Then we determine if the tag type is <a>. We do this because if an anchor tag
+                    #      exists in the document with an id value then it will get added to the navbar list.
+                    #      Also, if an <a> tag exists with a name= attribute AND an id= attribute but the 
+                    #      values of those two are not the same then another entry will be added to the navbar
+                    #      list, which is not desired behavior. Only <h[1-6]> tags with id's should be added.
+                    #      TL:DR --> if attribute type is anchor and it has an id attribute we don't care.
+                    #   4) Finally, if it gets this far, it is a header tag with an id. We add it to the
+                    #      navbar list.
+                    if ($attribute->name == 'id'){
+                        if($attribute->value == $oldLinkModeValue && $oldLinkMode == True){
+                            #we check the value if in old link mode and if it matches then we proceed to just
+                            #skip this entry to not have duplicate links in the drop down menu.
+                            continue 1; #We were implicitly doing this anyway so might as well be explicit.
+                        }
+                        elseif ($element->tagName == 'a'){
+                            #We dont care about any anchor tags with id values.
+                            continue 1;
+                        }
+                        else {
+                            array_push($tagnamearray, $element->tagName);
+                            array_push($tagvaluearray, $attribute->value);
+                        }
+                    }
+                    else {
+                        # dont care! The attribute is not an id.
+                        continue 1;
+                    }
                 }
-            }
-        }
-    }
+            } #end iteration through all the attributes of an element.
+        } #end check if there are attributes to an element.
+    } #end iteration through found elements in document.
     if ($oldLinkMode == True){
         #add warning message content and close the warning message tags
         $oldLinkModeMessage = '<div style="color:red;">WARNING: You are using the <em>old</em> style of internal document links.<br>Here is a list of the ones found in this document:' . $oldLinkModeMessage . '</ol></div>';
     }
     array_push($idarray, $tagnamearray, $tagvaluearray);
     return array($idarray,$oldLinkMode,$oldLinkModeMessage);
-  }
+  } #end function findheaders
+  
   #Then we call this new function
   list($navbar_menus,$headerWarningFlag,$headerWarningMessage) = findheaders($contents);
   #Then check if we should add the warningMessage
-  if ($headerWarningFlag && $INSTRUCTOR){ #if so, add it at the top of the content
+  if ($headerWarningFlag && $INSTRUCTOR && !isset($IGNORE_A_TAG_WARNING)){ #if so, add it at the top of the content
       $contents = $headerWarningMessage . $contents;
   }
 

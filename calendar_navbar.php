@@ -125,7 +125,7 @@
                   if (strpos($item, 'pagename:') === False) {
                     $item_desc = ucfirst($item);
                     $item_desc = str_ireplace("-", " ", $item_desc);
-                    echo "<li><a href='#$item'>$item_desc</a></li>".PHP_EOL;
+                    echo '<li><a href="#' . $item . '">' . $item_desc . '</a></li>'.PHP_EOL;
                     $navbar_menu_div = True;
                   }
                 }
@@ -219,7 +219,8 @@
                           echo "<li><a href='calendar.php?type=$type&event=$cname'>$cname - ".$cdata['name']."</a></li>".PHP_EOL;
                         }
                       } else {
-                        echo "<li><a title='Material not online at this time' href='#'><span style='color=#AAAAAA'>$cname - ".$cdata['name']."</span></a></li>".PHP_EOL;
+                        echo "<li><a title='Material not online at this time' href='#'><font color='#AAAAAA'>$cname - ".$cdata['name']."</font></a></li>".PHP_EOL;
+                        // echo "<li><a title='Material not online at this time' href='#' style='color=#AAAAAA'>$cname - ".$cdata['name']."</a></li>".PHP_EOL;
                       }
                     }
                   }

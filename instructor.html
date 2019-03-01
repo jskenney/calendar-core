@@ -316,7 +316,7 @@ lab/lab-solution           12  15 2020</code></pre>
 </form>
 </div>
 <p>
-  Multiple passwords can be used within the tag if they are seperated by commas,
+  Multiple passwords can be used within the tag if they are separated by commas,
   leading/trailing whitespace will be removed.
   Each of the passwords would be considered valid to see the hidden content.
   Avoid commas in passwords.
@@ -440,7 +440,7 @@ today we will be working on &lt;replace value="type"&gt; &lt;replace value="even
   by the user who edits the URL, by adding the <b>url</b> tag.  Example:
   <pre><code class="html">&lt;b&gt;Hello User &lt;url value="alpha" default="m18xxxx"&gt;&lt;/b&gt;  </code></pre>
   Try this by adding something like
-  <code>&amp;alpha=m194141</code> to the enf of the URL on the browser bar,
+  <code>&amp;alpha=m194141</code> to the end of the URL on the browser bar,
   currently this results in
   <b>Hello User <url value="alpha" default="m18xxxx"></b>.
 </p>
@@ -458,14 +458,14 @@ today we will be working on &lt;replace value="type"&gt; &lt;replace value="even
 <pre><code class="html">&lt;search src="Interesting"&gt;</code></pre>
 <p>
   Keywords are sections defined by <b> &lt;a name=""&gt; </b> tags (as seen above), while
-  generic searches will look for any content.  <b>Note:</b> these features are case sensitive, and
+  generic searches will look for any content.  <b>Note:</b> these features are case-sensitive
   searching will accept regular expressions.
 </p>
 
 <h4>Including and Running PHP Code</h4>
 <p>
   If you wish to run PHP code within the calendar, this can be done, but you must have
-  the PHP in a separate file that is, in essense, being included by the class lecture notes.
+  the PHP in a separate file that is, in essence, being included by the class lecture notes.
   to load a set of PHP code, use the &lt;calphp src="filename.php"&gt; tag.  Below is an example
   PHP script and the associated output:
 </p>
@@ -482,17 +482,72 @@ today we will be working on &lt;replace value="type"&gt; &lt;replace value="even
 <h4>Embedding Editable Code</h4>
 <p>
   The Calendar will allow you to use the <a href="https://ace.c9.io/">Ace Editor</a>, and
-  has abstracted away the difficulty of its use via the <b>&lt;ace&gt;</b> tags.
+  has abstracted away the difficulty of its use via the <b>&lt;ace&gt;</b> tags. The most basic usage is:
 </p>
-<pre><code class="html">&lt;ace name="htmldemo" mode="html_elixir" theme="crimson_editor" height="48px"&gt;Hello World&lt;/ace&gt;</code></pre>
-<ace name="htmldemo" mode="html_elixir" theme="crimson_editor" height="48px">Hello World</ace>
-<br />
+<pre><code class="html">&lt;ace&gt;Hello World&lt;/ace&gt;</code></pre>
 <p>
-  Additionally you can have changes that are made update some other area on your page, by creating another <b>div</b>
-  with <b>ace_</b> followed by what you called the previous as the id.  Changes in the page will automatically be
-  reflected, see the demo below.  Additionally the options readonly="true" and nolinenumbers="true" will result
-  in a read-only box and a box without line numbers respectively.
+Which will cause an editor that looks like the one below to appear:
+</p>
+<ace>Hello World</ace>
+<p style="text-align: center">
+    Remember: you <b>must</b> either have a different name for <b>every</b> editor <em>or</em> have no name attribute.<br> Editors without a name attribute will be sequentially numbered.
+</p>
+<p>
+    Options: there are some optional attributes that can be used to change the behavior. They are as follows:
+</p>
+<ul>
+    <li>Adding <code>readonly="true"</code> will render a box that cannot be edited. Changing the value to "false" or removing the attribute will undo this option.</li>
+    <li>Adding <code>nolinenumbers="true"</code> will cause the box to render without the line numbers. Setting this to "false" or removing the attribute will undo this option.</li>
+    <li>Adding <code>textwrap="true"</code> will cause the editor to wrap lines of text to the next line instead of making the user scroll to the right. Setting this to "false" or removing to attribute will undo this option.</li>
+    <li>Adding <code>name="<em>string</em>"</code> will cause the editor to be named after the value. If this option is omitted the editors assigned a sequentially numbered name. Do <b>not</b> use a name with <b>-</b> in it, as it will not work correctly.</li>
+    <li>Adding <code>height="<em>xypx</em>"</code> will cause the editor box to be xy pixels in height. The default value is "48px". You may also use other standard units such as "em", "rem", etc.</li>
+    <li><em>Advanced</em>: Adding <code>mode="<em>mode</em>"</code> will cause the editor mode to be assigned to the value <em>mode</em>. The default value is "html_elixir".</li>
+    <li><em>Advanced</em>: Adding <code>theme="<em>theme</em>"</code> will cause the editor theme to be assigned to the value <em>theme</em>. The default value is "tomorrow", but most people use "crimson_editor".</li>
+</ul>
+<p>
+So, a typical usage is:
+</p>
+<pre><code class="html">&lt;ace name="htmldemo" mode="html_elixir" theme="crimson_editor" height="50px"&gt;Hello World&lt;/ace&gt;</code></pre>
+<p>
+Which will cause an editor that looks like the one below to appear:
+</p>
+<ace name="htmldemo" mode="html_elixir" theme="crimson_editor" height="50px">Hello World</ace><br>
+<p>
+    Here is an example using <code>textwrap</code> and <code>nolinenumbers</code>.
+</p>
+<div class="row">
+    <div class="six columns">
+        <pre><code class="html">&lt;ace theme="crimson_editor" height="230px" nolinenumbers="true" textwrap="true"&gt;
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean aliquet feugiat rhoncus. Praesent tincidunt sed lorem quis eleifend. In hac habitasse platea dictumst. Proin id mollis justo. Proin a rutrum dolor. Integer bibendum vitae sapien non consectetur. Sed a sem ut ex aliquam pellentesque eleifend id est. Etiam at vulputate tellus. In auctor arcu at dolor pulvinar, imperdiet scelerisque erat dignissim. Vestibulum sollicitudin dui vitae luctus egestas. Sed lectus est, pellentesque condimentum aliquet at, congue non sem.
+
+The end of the text is here.
+&lt;/ace&gt;</code></pre>
+    </div>
+    <div class="six columns">
+        <ace theme="crimson_editor" height="230px" nolinenumbers="true" textwrap="true">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean aliquet feugiat rhoncus. Praesent tincidunt sed lorem quis eleifend. In hac habitasse platea dictumst. Proin id mollis justo. Proin a rutrum dolor. Integer bibendum vitae sapien non consectetur. Sed a sem ut ex aliquam pellentesque eleifend id est. Etiam at vulputate tellus. In auctor arcu at dolor pulvinar, imperdiet scelerisque erat dignissim. Vestibulum sollicitudin dui vitae luctus egestas. Sed lectus est, pellentesque condimentum aliquet at, congue non sem.
+
+The end of the text is here.</ace>
+    </div>
+</div>
+<h4>Rendering of Embedded HTML Code</h4>
+<p>
+  Additionally you can have changes that are made in an editor update some other area on your page, by creating another <b>div</b>
+  with <b>ace_</b> followed by what you called the editor (i.e the editors name) as the id. Changes in the page will automatically be
+  reflected, see the demo below that renders what is typed in the "htmldemo" editor above.
 </p>
 <pre><code class="html">&lt;div id="ace_htmldemo"&gt;&lt;/div&gt;</code></pre>
 <div id="ace_htmldemo"></div>
+<br>
+<p>
+    Here is a complete reference example:
+</p>
+
+<div class="row">
+    <div class="six columns">
+        <ace name="ref_demo" theme="crimson_editor" nolinenumbers="true">&lt;h3&gt;Calendar is great!&lt;/h3&gt;</ace>
+    </div>
+    <div class="six columns">
+        <div id="ace_ref_demo"></div>
+    </div>
+</div>
 <br /><br /><br /><br /><br />
