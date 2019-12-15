@@ -30,7 +30,7 @@ var RedHighlightRules = function() {
             {token : "string.tag", regex : /</, next : "tag"},
             {token : "string", regex : /"/, next  : "string"},
             {token : "string.other", regex : "{", next  : "string.other"},
-            {token : "comment", regex : "comment [[{]", next : "comment"},
+            {token : "comment", regex : "comment [{]", next : "comment"},
             {token : "comment",  regex : /;.+$/},
             {token : "paren.map-start", regex : "#\\("},
             {token : "paren.block-start", regex : "[\\[]"},
@@ -394,7 +394,7 @@ oop.inherits(Mode, TextMode);
 (function() {
 
     this.lineCommentStart = ";";
-	this.blockCommentStart = "comment {";
+    this.blockComment = { start: "comment {", end: "}" };
 
     this.getNextLineIndent = function(state, line, tab) {
         var indent = this.$getIndent(line);
@@ -440,4 +440,11 @@ oop.inherits(Mode, TextMode);
 }).call(Mode.prototype);
 
 exports.Mode = Mode;
-});
+});                (function() {
+                    window.require(["ace/mode/red"], function(m) {
+                        if (typeof module == "object" && typeof exports == "object" && module) {
+                            module.exports = m;
+                        }
+                    });
+                })();
+            
