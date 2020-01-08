@@ -6,7 +6,7 @@ html
     meta name="author" content=author
     link rel="icon" type="image/png" href=file_path("favicon.png")
     javascript:
-      alert('Slim supports embedded javascript!')
+        alert('Slim supports embedded javascript!')
 
   body
     h1 Markup examples
@@ -29,3 +29,6 @@ html
     div id="footer"
       == render 'footer'
       | Copyright &copy; #{@year} #{@author}
+        indenting test
+
+    - @page_current = true

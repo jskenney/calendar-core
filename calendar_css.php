@@ -103,8 +103,8 @@
   }
 
 ?>
-      
-      
+
+
 <?php
   echo "    <!-- Custom JavaScript based on user preferences -->".PHP_EOL;
   if (isset($CUSTOMJS) && isset($_REQUEST['type']) && isset($CUSTOMJS[$_REQUEST['type']])) {
@@ -125,7 +125,7 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="<?php echo CALENDAR_PATH; ?>calendar/jquery/js/jquery-3.3.1.min.js"></script>
+    <script src="<?php echo CALENDAR_PATH; ?>calendar/jquery/js/jquery-3.4.1.min.js"></script>
     <script src="<?php echo CALENDAR_PATH; ?>calendar/bootstrap/js/bootstrap.min.js"></script>
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="<?php echo CALENDAR_PATH; ?>calendar/bootstrap3-ie10-viewport-bug-workaround/ie10-viewport-bug-workaround.js"></script>

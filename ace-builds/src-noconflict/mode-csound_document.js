@@ -5,7 +5,9 @@ var oop = require("../lib/oop");
 
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
-var CsoundPreprocessorHighlightRules = function() {
+var CsoundPreprocessorHighlightRules = function(embeddedRulePrefix) {
+
+    this.embeddedRulePrefix = embeddedRulePrefix === undefined ? "" : embeddedRulePrefix;
 
     this.semicolonComments = {
         token : "comment.line.semicolon.csound",
@@ -84,6 +86,17 @@ var CsoundPreprocessorHighlightRules = function() {
         }, {
             token : "keyword.preprocessor.csound",
             regex : /#include/,
+            push  : [
+                this.comments,
+                {
+                    token : "string.csound",
+                    regex : /([^ \t])(?:.*?\1)/,
+                    next  : "pop"
+                }
+            ]
+        }, {
+            token : "keyword.preprocessor.csound",
+            regex : /#includestr/,
             push  : [
                 this.comments,
                 {
@@ -211,6 +224,12 @@ oop.inherits(CsoundPreprocessorHighlightRules, TextHighlightRules);
 (function() {
 
     this.pushRule = function(params) {
+        if (Array.isArray(params.next)) {
+            for (var i = 0; i < params.next.length; i++) {
+                params.next[i] = this.embeddedRulePrefix + params.next[i];
+            }
+        }
+
         return {
             regex : params.regex, onMatch: function(value, currentState, stack, line) {
                 if (stack.length === 0)
@@ -225,34 +244,23 @@ oop.inherits(CsoundPreprocessorHighlightRules, TextHighlightRules);
                 this.next = stack[stack.length - 1];
                 return params.token;
             },
+
             get next() { return Array.isArray(params.next) ? params.next[params.next.length - 1] : params.next; },
             set next(next) {
-                if (Array.isArray(params.next)) {
-                    var oldNext = params.next[params.next.length - 1];
-                    var oldNextIndex = oldNext.length - 1;
-                    var newNextIndex = next.length - 1;
-                    if (newNextIndex > oldNextIndex) {
-                        while (oldNextIndex >= 0 && newNextIndex >= 0) {
-                            if (oldNext.charAt(oldNextIndex) !== next.charAt(newNextIndex)) {
-                                var prefix = next.substr(0, newNextIndex);
-                                for (var i = 0; i < params.next.length; i++) {
-                                    params.next[i] = prefix + params.next[i];
-                                }
-                                break;
-                            }
-                            oldNextIndex--;
-                            newNextIndex--;
-                        }
-                    }
-                } else {
+                if (!Array.isArray(params.next)) {
                     params.next = next;
                 }
             },
+
             get token() { return params.token; }
         };
     };
 
     this.popRule = function(params) {
+        if (params.next) {
+            params.next = this.embeddedRulePrefix + params.next;
+        }
+
         return {
             regex : params.regex, onMatch: function(value, currentState, stack, line) {
                 stack.pop();
@@ -279,9 +287,9 @@ var oop = require("../lib/oop");
 
 var CsoundPreprocessorHighlightRules = require("./csound_preprocessor_highlight_rules").CsoundPreprocessorHighlightRules;
 
-var CsoundScoreHighlightRules = function() {
+var CsoundScoreHighlightRules = function(embeddedRulePrefix) {
 
-    CsoundPreprocessorHighlightRules.call(this);
+    CsoundPreprocessorHighlightRules.call(this, embeddedRulePrefix);
 
     this.quotedStringContents.push({
         token : "invalid.illegal.csound-score",
@@ -593,7 +601,7 @@ var PythonHighlightRules = function() {
     var keywords = (
         "and|as|assert|break|class|continue|def|del|elif|else|except|exec|" +
         "finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|" +
-        "raise|return|try|while|with|yield|async|await"
+        "raise|return|try|while|with|yield|async|await|nonlocal"
     );
 
     var builtinConstants = (
@@ -603,22 +611,26 @@ var PythonHighlightRules = function() {
     var builtinFunctions = (
         "abs|divmod|input|open|staticmethod|all|enumerate|int|ord|str|any|" +
         "eval|isinstance|pow|sum|basestring|execfile|issubclass|print|super|" +
-        "binfile|iter|property|tuple|bool|filter|len|range|type|bytearray|" +
+        "binfile|bin|iter|property|tuple|bool|filter|len|range|type|bytearray|" +
         "float|list|raw_input|unichr|callable|format|locals|reduce|unicode|" +
         "chr|frozenset|long|reload|vars|classmethod|getattr|map|repr|xrange|" +
         "cmp|globals|max|reversed|zip|compile|hasattr|memoryview|round|" +
-        "__import__|complex|hash|min|set|apply|delattr|help|next|setattr|" +
-        "buffer|dict|hex|object|slice|coerce|dir|id|oct|sorted|intern"
+        "__import__|complex|hash|min|apply|delattr|help|next|setattr|set|" +
+        "buffer|dict|hex|object|slice|coerce|dir|id|oct|sorted|intern|" +
+        "ascii|breakpoint|bytes"
     );
     var keywordMapper = this.createKeywordMapper({
         "invalid.deprecated": "debugger",
         "support.function": builtinFunctions,
+        "variable.language": "self|cls",
         "constant.language": builtinConstants,
         "keyword": keywords
     }, "identifier");
 
-    var strPre = "(?:r|u|ur|R|U|UR|Ur|uR)?";
-
+    var strPre = "[uU]?";
+    var strRawPre = "[rR]";
+    var strFormatPre = "[fF]";
+    var strRawFormatPre = "(?:[rR][fF]|[fF][rR])";
     var decimalInteger = "(?:(?:[1-9]\\d*)|(?:0))";
     var octInteger = "(?:0[oO]?[0-7]+)";
     var hexInteger = "(?:0[xX][\\dA-Fa-f]+)";
@@ -629,10 +641,10 @@ var PythonHighlightRules = function() {
     var fraction = "(?:\\.\\d+)";
     var intPart = "(?:\\d+)";
     var pointFloat = "(?:(?:" + intPart + "?" + fraction + ")|(?:" + intPart + "\\.))";
-    var exponentFloat = "(?:(?:" + pointFloat + "|" +  intPart + ")" + exponent + ")";
+    var exponentFloat = "(?:(?:" + pointFloat + "|" + intPart + ")" + exponent + ")";
     var floatNumber = "(?:" + exponentFloat + "|" + pointFloat + ")";
 
-    var stringEscape =  "\\\\(x[0-9A-Fa-f]{2}|[0-7]{3}|[\\\\abfnrtv'\"]|U[0-9A-Fa-f]{8}|u[0-9A-Fa-f]{4})";
+    var stringEscape = "\\\\(x[0-9A-Fa-f]{2}|[0-7]{3}|[\\\\abfnrtv'\"]|U[0-9A-Fa-f]{8}|u[0-9A-Fa-f]{4})";
 
     this.$rules = {
         "start" : [ {
@@ -655,82 +667,313 @@ var PythonHighlightRules = function() {
             regex : strPre + "'(?=.)",
             next : "qstring"
         }, {
-            token : "constant.numeric", // imaginary
-            regex : "(?:" + floatNumber + "|\\d+)[jJ]\\b"
+            token: "string",
+            regex: strRawPre + '"{3}',
+            next: "rawqqstring3"
         }, {
-            token : "constant.numeric", // float
-            regex : floatNumber
+            token: "string", 
+            regex: strRawPre + '"(?=.)',
+            next: "rawqqstring"
         }, {
-            token : "constant.numeric", // long integer
-            regex : integer + "[lL]\\b"
+            token: "string",
+            regex: strRawPre + "'{3}",
+            next: "rawqstring3"
         }, {
-            token : "constant.numeric", // integer
-            regex : integer + "\\b"
+            token: "string",
+            regex: strRawPre + "'(?=.)",
+            next: "rawqstring"
         }, {
-            token : keywordMapper,
-            regex : "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
+            token: "string",
+            regex: strFormatPre + '"{3}',
+            next: "fqqstring3"
         }, {
-            token : "keyword.operator",
-            regex : "\\+|\\-|\\*|\\*\\*|\\/|\\/\\/|%|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|="
+            token: "string",
+            regex: strFormatPre + '"(?=.)',
+            next: "fqqstring"
         }, {
-            token : "paren.lparen",
-            regex : "[\\[\\(\\{]"
+            token: "string",
+            regex: strFormatPre + "'{3}",
+            next: "fqstring3"
         }, {
-            token : "paren.rparen",
-            regex : "[\\]\\)\\}]"
+            token: "string",
+            regex: strFormatPre + "'(?=.)",
+            next: "fqstring"
+        },{
+            token: "string",
+            regex: strRawFormatPre + '"{3}',
+            next: "rfqqstring3"
         }, {
-            token : "text",
-            regex : "\\s+"
-        } ],
-        "qqstring3" : [ {
-            token : "constant.language.escape",
-            regex : stringEscape
+            token: "string",
+            regex: strRawFormatPre + '"(?=.)',
+            next: "rfqqstring"
         }, {
-            token : "string", // multi line """ string end
-            regex : '"{3}',
-            next : "start"
+            token: "string",
+            regex: strRawFormatPre + "'{3}",
+            next: "rfqstring3"
         }, {
-            defaultToken : "string"
-        } ],
-        "qstring3" : [ {
-            token : "constant.language.escape",
-            regex : stringEscape
+            token: "string",
+            regex: strRawFormatPre + "'(?=.)",
+            next: "rfqstring"
         }, {
-            token : "string",  // multi line ''' string end
-            regex : "'{3}",
-            next : "start"
+            token: "keyword.operator",
+            regex: "\\+|\\-|\\*|\\*\\*|\\/|\\/\\/|%|@|<<|>>|&|\\||\\^|~|<|>|<=|=>|==|!=|<>|="
         }, {
-            defaultToken : "string"
-        } ],
-        "qqstring" : [{
-            token : "constant.language.escape",
-            regex : stringEscape
+            token: "punctuation",
+            regex: ",|:|;|\\->|\\+=|\\-=|\\*=|\\/=|\\/\\/=|%=|@=|&=|\\|=|^=|>>=|<<=|\\*\\*="
         }, {
-            token : "string",
-            regex : "\\\\$",
-            next  : "qqstring"
+            token: "paren.lparen",
+            regex: "[\\[\\(\\{]"
         }, {
-            token : "string",
-            regex : '"|$',
-            next  : "start"
+            token: "paren.rparen",
+            regex: "[\\]\\)\\}]"
+        }, {
+            token: "text",
+            regex: "\\s+"
+        }, {
+            include: "constants"
+        }],
+        "qqstring3": [{
+            token: "constant.language.escape",
+            regex: stringEscape
+        }, {
+            token: "string", // multi line """ string end
+            regex: '"{3}',
+            next: "start"
         }, {
             defaultToken: "string"
         }],
-        "qstring" : [{
-            token : "constant.language.escape",
-            regex : stringEscape
+        "qstring3": [{
+            token: "constant.language.escape",
+            regex: stringEscape
         }, {
-            token : "string",
-            regex : "\\\\$",
-            next  : "qstring"
-        }, {
-            token : "string",
-            regex : "'|$",
-            next  : "start"
+            token: "string",  // multi line ''' string end
+            regex: "'{3}",
+            next: "start"
         }, {
             defaultToken: "string"
+        }],
+        "qqstring": [{
+            token: "constant.language.escape",
+            regex: stringEscape
+        }, {
+            token: "string",
+            regex: "\\\\$",
+            next: "qqstring"
+        }, {
+            token: "string",
+            regex: '"|$',
+            next: "start"
+        }, {
+            defaultToken: "string"
+        }],
+        "qstring": [{
+            token: "constant.language.escape",
+            regex: stringEscape
+        }, {
+            token: "string",
+            regex: "\\\\$",
+            next: "qstring"
+        }, {
+            token: "string",
+            regex: "'|$",
+            next: "start"
+        }, {
+            defaultToken: "string"
+        }],
+        "rawqqstring3": [{
+            token: "string", // multi line """ string end
+            regex: '"{3}',
+            next: "start"
+        }, {
+            defaultToken: "string"
+        }],
+        "rawqstring3": [{
+            token: "string",  // multi line ''' string end
+            regex: "'{3}",
+            next: "start"
+        }, {
+            defaultToken: "string"
+        }],
+        "rawqqstring": [{
+            token: "string",
+            regex: "\\\\$",
+            next: "rawqqstring"
+        }, {
+            token: "string",
+            regex: '"|$',
+            next: "start"
+        }, {
+            defaultToken: "string"
+        }],
+        "rawqstring": [{
+            token: "string",
+            regex: "\\\\$",
+            next: "rawqstring"
+        }, {
+            token: "string",
+            regex: "'|$",
+            next: "start"
+        }, {
+            defaultToken: "string"
+        }],
+        "fqqstring3": [{
+            token: "constant.language.escape",
+            regex: stringEscape
+        }, {
+            token: "string", // multi line """ string end
+            regex: '"{3}',
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "fqstring3": [{
+            token: "constant.language.escape",
+            regex: stringEscape
+        }, {
+            token: "string",  // multi line ''' string end
+            regex: "'{3}",
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "fqqstring": [{
+            token: "constant.language.escape",
+            regex: stringEscape
+        }, {
+            token: "string",
+            regex: "\\\\$",
+            next: "fqqstring"
+        }, {
+            token: "string",
+            regex: '"|$',
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "fqstring": [{
+            token: "constant.language.escape",
+            regex: stringEscape
+        }, {
+            token: "string",
+            regex: "'|$",
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "rfqqstring3": [{
+            token: "string", // multi line """ string end
+            regex: '"{3}',
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "rfqstring3": [{
+            token: "string",  // multi line ''' string end
+            regex: "'{3}",
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "rfqqstring": [{
+            token: "string",
+            regex: "\\\\$",
+            next: "rfqqstring"
+        }, {
+            token: "string",
+            regex: '"|$',
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "rfqstring": [{
+            token: "string",
+            regex: "'|$",
+            next: "start"
+        }, {
+            token: "paren.lparen",
+            regex: "{",
+            push: "fqstringParRules"
+        }, {
+            defaultToken: "string"
+        }],
+        "fqstringParRules": [{//TODO: nested {}
+            token: "paren.lparen",
+            regex: "[\\[\\(]"
+        }, {
+            token: "paren.rparen",
+            regex: "[\\]\\)]"
+        }, {
+            token: "string",
+            regex: "\\s+"
+        }, {
+            token: "string",
+            regex: "'(.)*'"
+        }, {
+            token: "string",
+            regex: '"(.)*"'
+        }, {
+            token: "function.support",
+            regex: "(!s|!r|!a)"
+        }, {
+            include: "constants"
+        },{
+            token: 'paren.rparen',
+            regex: "}",
+            next: 'pop'
+        },{
+            token: 'paren.lparen',
+            regex: "{",
+            push: "fqstringParRules"
+        }],
+        "constants": [{
+            token: "constant.numeric", // imaginary
+            regex: "(?:" + floatNumber + "|\\d+)[jJ]\\b"
+        }, {
+            token: "constant.numeric", // float
+            regex: floatNumber
+        }, {
+            token: "constant.numeric", // long integer
+            regex: integer + "[lL]\\b"
+        }, {
+            token: "constant.numeric", // integer
+            regex: integer + "\\b"
+        }, {
+            token: ["punctuation", "function.support"],// method
+            regex: "(\\.)([a-zA-Z_]+)\\b"
+        }, {
+            token: keywordMapper,
+            regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
         }]
     };
+    this.normalizeRules();
 };
 
 oop.inherits(PythonHighlightRules, TextHighlightRules);
@@ -749,9 +992,9 @@ var CsoundScoreHighlightRules = require("./csound_score_highlight_rules").Csound
 var LuaHighlightRules = require("./lua_highlight_rules").LuaHighlightRules;
 var PythonHighlightRules = require("./python_highlight_rules").PythonHighlightRules;
 
-var CsoundOrchestraHighlightRules = function() {
+var CsoundOrchestraHighlightRules = function(embeddedRulePrefix) {
 
-    CsoundPreprocessorHighlightRules.call(this);
+    CsoundPreprocessorHighlightRules.call(this, embeddedRulePrefix);
     var opcodes = [
         "ATSadd",
         "ATSaddnz",
@@ -854,12 +1097,13 @@ var CsoundOrchestraHighlightRules = function() {
         "MixerSend",
         "MixerSetLevel",
         "MixerSetLevel_i",
+        "OSCbundle",
+        "OSCcount",
         "OSCinit",
         "OSCinitM",
         "OSClisten",
         "OSCraw",
         "OSCsend",
-        "OSCsendA",
         "OSCsend_lo",
         "S",
         "STKBandedWG",
@@ -910,10 +1154,13 @@ var CsoundOrchestraHighlightRules = function() {
         "atonex",
         "babo",
         "balance",
+        "balance2",
         "bamboo",
         "barmodel",
         "bbcutm",
         "bbcuts",
+        "beadsynt",
+        "beosc",
         "betarand",
         "bexprnd",
         "bformdec1",
@@ -923,8 +1170,8 @@ var CsoundOrchestraHighlightRules = function() {
         "biquada",
         "birnd",
         "bpf",
+        "bpfcos",
         "bqrez",
-        "buchla",
         "butbp",
         "butbr",
         "buthp",
@@ -959,9 +1206,11 @@ var CsoundOrchestraHighlightRules = function() {
         "chnclear",
         "chnexport",
         "chnget",
+        "chngetks",
         "chnmix",
         "chnparams",
         "chnset",
+        "chnsetks",
         "chuap",
         "clear",
         "clfilt",
@@ -1026,6 +1275,7 @@ var CsoundOrchestraHighlightRules = function() {
         "dconv",
         "dct",
         "dctinv",
+        "deinterleave",
         "delay",
         "delay1",
         "delayk",
@@ -1089,7 +1339,9 @@ var CsoundOrchestraHighlightRules = function() {
         "faustaudio",
         "faustcompile",
         "faustctl",
+        "faustdsp",
         "faustgen",
+        "faustplay",
         "fft",
         "fftinv",
         "ficlose",
@@ -1111,16 +1363,6 @@ var CsoundOrchestraHighlightRules = function() {
         "flooper",
         "flooper2",
         "floor",
-        "fluidAllOut",
-        "fluidCCi",
-        "fluidCCk",
-        "fluidControl",
-        "fluidEngine",
-        "fluidLoad",
-        "fluidNote",
-        "fluidOut",
-        "fluidProgramSelect",
-        "fluidSetInterpMethod",
         "fmanal",
         "fmax",
         "fmb3",
@@ -1151,6 +1393,7 @@ var CsoundOrchestraHighlightRules = function() {
         "fractalnoise",
         "framebuffer",
         "freeverb",
+        "ftaudio",
         "ftchnls",
         "ftconv",
         "ftcps",
@@ -1164,11 +1407,13 @@ var CsoundOrchestraHighlightRules = function() {
         "ftlptim",
         "ftmorf",
         "ftom",
+        "ftprint",
         "ftresize",
         "ftresizei",
         "ftsamplebank",
         "ftsave",
         "ftsavek",
+        "ftslice",
         "ftsr",
         "gain",
         "gainslider",
@@ -1185,6 +1430,7 @@ var CsoundOrchestraHighlightRules = function() {
         "getcol",
         "getftargs",
         "getrow",
+        "getrowlin",
         "getseed",
         "gogobel",
         "grain",
@@ -1240,6 +1486,7 @@ var CsoundOrchestraHighlightRules = function() {
         "insremot",
         "int",
         "integ",
+        "interleave",
         "interp",
         "invalue",
         "inx",
@@ -1434,6 +1681,7 @@ var CsoundOrchestraHighlightRules = function() {
         "lfo",
         "limit",
         "limit1",
+        "lincos",
         "line",
         "linen",
         "linenr",
@@ -1468,6 +1716,8 @@ var CsoundOrchestraHighlightRules = function() {
         "lorenz",
         "loscil",
         "loscil3",
+        "loscil3phs",
+        "loscilphs",
         "loscilx",
         "lowpass2",
         "lowres",
@@ -1538,6 +1788,7 @@ var CsoundOrchestraHighlightRules = function() {
         "midion",
         "midion2",
         "midiout",
+        "midiout_i",
         "midipgm",
         "midipitchbend",
         "midipolyaftertouch",
@@ -1565,11 +1816,6 @@ var CsoundOrchestraHighlightRules = function() {
         "mp3len",
         "mp3nchnls",
         "mp3scal",
-        "mp3scal_check",
-        "mp3scal_load",
-        "mp3scal_load2",
-        "mp3scal_play",
-        "mp3scal_play2",
         "mp3sr",
         "mpulse",
         "mrtmsg",
@@ -1716,6 +1962,7 @@ var CsoundOrchestraHighlightRules = function() {
         "prepiano",
         "print",
         "print_type",
+        "printarray",
         "printf",
         "printf_i",
         "printk",
@@ -1766,7 +2013,6 @@ var CsoundOrchestraHighlightRules = function() {
         "pvsftw",
         "pvsfwrite",
         "pvsgain",
-        "pvsgendy",
         "pvshift",
         "pvsifd",
         "pvsin",
@@ -1895,6 +2141,7 @@ var CsoundOrchestraHighlightRules = function() {
         "remoteport",
         "remove",
         "repluck",
+        "reshapearray",
         "reson",
         "resonk",
         "resonr",
@@ -1973,7 +2220,6 @@ var CsoundOrchestraHighlightRules = function() {
         "shaker",
         "shiftin",
         "shiftout",
-        "signalflowgraph",
         "signum",
         "sin",
         "sinh",
@@ -1981,6 +2227,7 @@ var CsoundOrchestraHighlightRules = function() {
         "sinsyn",
         "sleighbells",
         "slicearray",
+        "slicearray_i",
         "slider16",
         "slider16f",
         "slider16table",
@@ -2004,7 +2251,6 @@ var CsoundOrchestraHighlightRules = function() {
         "sockrecv",
         "sockrecvs",
         "socksend",
-        "socksend_k",
         "socksends",
         "sorta",
         "sortd",
@@ -2019,6 +2265,7 @@ var CsoundOrchestraHighlightRules = function() {
         "sprintfk",
         "spsend",
         "sqrt",
+        "squinewave",
         "statevar",
         "stix",
         "strcat",
@@ -2062,6 +2309,7 @@ var CsoundOrchestraHighlightRules = function() {
         "system",
         "system_i",
         "tab",
+        "tab2array",
         "tab2pvs",
         "tab_i",
         "tabifd",
@@ -2096,6 +2344,7 @@ var CsoundOrchestraHighlightRules = function() {
         "tabmorphi",
         "tabplay",
         "tabrec",
+        "tabrowlin",
         "tabsum",
         "tabw",
         "tabw_i",
@@ -2104,38 +2353,6 @@ var CsoundOrchestraHighlightRules = function() {
         "tanh",
         "taninv",
         "taninv2",
-        "tb0",
-        "tb0_init",
-        "tb1",
-        "tb10",
-        "tb10_init",
-        "tb11",
-        "tb11_init",
-        "tb12",
-        "tb12_init",
-        "tb13",
-        "tb13_init",
-        "tb14",
-        "tb14_init",
-        "tb15",
-        "tb15_init",
-        "tb1_init",
-        "tb2",
-        "tb2_init",
-        "tb3",
-        "tb3_init",
-        "tb4",
-        "tb4_init",
-        "tb5",
-        "tb5_init",
-        "tb6",
-        "tb6_init",
-        "tb7",
-        "tb7_init",
-        "tb8",
-        "tb8_init",
-        "tb9",
-        "tb9_init",
         "tbvcf",
         "tempest",
         "tempo",
@@ -2161,6 +2378,8 @@ var CsoundOrchestraHighlightRules = function() {
         "trhighest",
         "trigger",
         "trigseq",
+        "trim",
+        "trim_i",
         "trirand",
         "trlowest",
         "trmix",
@@ -2344,6 +2563,38 @@ var CsoundOrchestraHighlightRules = function() {
         "tabmap",
         "tabmap_i",
         "tabslice",
+        "tb0",
+        "tb0_init",
+        "tb1",
+        "tb10",
+        "tb10_init",
+        "tb11",
+        "tb11_init",
+        "tb12",
+        "tb12_init",
+        "tb13",
+        "tb13_init",
+        "tb14",
+        "tb14_init",
+        "tb15",
+        "tb15_init",
+        "tb1_init",
+        "tb2",
+        "tb2_init",
+        "tb3",
+        "tb3_init",
+        "tb4",
+        "tb4_init",
+        "tb5",
+        "tb5_init",
+        "tb6",
+        "tb6_init",
+        "tb7",
+        "tb7_init",
+        "tb8",
+        "tb8_init",
+        "tb9",
+        "tb9_init",
         "vbap16",
         "vbap4",
         "vbap4move",
@@ -2491,6 +2742,8 @@ var CsoundOrchestraHighlightRules = function() {
         next  : "macro parameter value braced string"
     });
 
+    var scoreHighlightRules = new CsoundScoreHighlightRules("csound-score-");
+
     this.addRules({
         "macro parameter value braced string": [
             {
@@ -2589,7 +2842,7 @@ var CsoundOrchestraHighlightRules = function() {
             {
                 token : "punctuation.definition.string.begin.csound",
                 regex : /{{/,
-                next  : "csound-score-start"
+                next  : scoreHighlightRules.embeddedRulePrefix + "start"
             }, this.popRule({
                 token : "empty",
                 regex : /$/
@@ -2639,7 +2892,7 @@ var CsoundOrchestraHighlightRules = function() {
             regex : /}}/
         })
     ];
-    this.embedRules(CsoundScoreHighlightRules, "csound-score-", rules);
+    this.embedRules(scoreHighlightRules.getRules(), scoreHighlightRules.embeddedRulePrefix, rules);
     this.embedRules(PythonHighlightRules, "python-", rules);
     this.embedRules(LuaHighlightRules, "lua-", rules);
 
@@ -2657,9 +2910,9 @@ ace.define("ace/mode/css_highlight_rules",["require","exports","module","ace/lib
 var oop = require("../lib/oop");
 var lang = require("../lib/lang");
 var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
-var supportType = exports.supportType = "align-content|align-items|align-self|all|animation|animation-delay|animation-direction|animation-duration|animation-fill-mode|animation-iteration-count|animation-name|animation-play-state|animation-timing-function|backface-visibility|background|background-attachment|background-blend-mode|background-clip|background-color|background-image|background-origin|background-position|background-repeat|background-size|border|border-bottom|border-bottom-color|border-bottom-left-radius|border-bottom-right-radius|border-bottom-style|border-bottom-width|border-collapse|border-color|border-image|border-image-outset|border-image-repeat|border-image-slice|border-image-source|border-image-width|border-left|border-left-color|border-left-style|border-left-width|border-radius|border-right|border-right-color|border-right-style|border-right-width|border-spacing|border-style|border-top|border-top-color|border-top-left-radius|border-top-right-radius|border-top-style|border-top-width|border-width|bottom|box-shadow|box-sizing|caption-side|clear|clip|color|column-count|column-fill|column-gap|column-rule|column-rule-color|column-rule-style|column-rule-width|column-span|column-width|columns|content|counter-increment|counter-reset|cursor|direction|display|empty-cells|filter|flex|flex-basis|flex-direction|flex-flow|flex-grow|flex-shrink|flex-wrap|float|font|font-family|font-size|font-size-adjust|font-stretch|font-style|font-variant|font-weight|hanging-punctuation|height|justify-content|left|letter-spacing|line-height|list-style|list-style-image|list-style-position|list-style-type|margin|margin-bottom|margin-left|margin-right|margin-top|max-height|max-width|min-height|min-width|nav-down|nav-index|nav-left|nav-right|nav-up|opacity|order|outline|outline-color|outline-offset|outline-style|outline-width|overflow|overflow-x|overflow-y|padding|padding-bottom|padding-left|padding-right|padding-top|page-break-after|page-break-before|page-break-inside|perspective|perspective-origin|position|quotes|resize|right|tab-size|table-layout|text-align|text-align-last|text-decoration|text-decoration-color|text-decoration-line|text-decoration-style|text-indent|text-justify|text-overflow|text-shadow|text-transform|top|transform|transform-origin|transform-style|transition|transition-delay|transition-duration|transition-property|transition-timing-function|unicode-bidi|vertical-align|visibility|white-space|width|word-break|word-spacing|word-wrap|z-index";
+var supportType = exports.supportType = "align-content|align-items|align-self|all|animation|animation-delay|animation-direction|animation-duration|animation-fill-mode|animation-iteration-count|animation-name|animation-play-state|animation-timing-function|backface-visibility|background|background-attachment|background-blend-mode|background-clip|background-color|background-image|background-origin|background-position|background-repeat|background-size|border|border-bottom|border-bottom-color|border-bottom-left-radius|border-bottom-right-radius|border-bottom-style|border-bottom-width|border-collapse|border-color|border-image|border-image-outset|border-image-repeat|border-image-slice|border-image-source|border-image-width|border-left|border-left-color|border-left-style|border-left-width|border-radius|border-right|border-right-color|border-right-style|border-right-width|border-spacing|border-style|border-top|border-top-color|border-top-left-radius|border-top-right-radius|border-top-style|border-top-width|border-width|bottom|box-shadow|box-sizing|caption-side|clear|clip|color|column-count|column-fill|column-gap|column-rule|column-rule-color|column-rule-style|column-rule-width|column-span|column-width|columns|content|counter-increment|counter-reset|cursor|direction|display|empty-cells|filter|flex|flex-basis|flex-direction|flex-flow|flex-grow|flex-shrink|flex-wrap|float|font|font-family|font-size|font-size-adjust|font-stretch|font-style|font-variant|font-weight|hanging-punctuation|height|justify-content|left|letter-spacing|line-height|list-style|list-style-image|list-style-position|list-style-type|margin|margin-bottom|margin-left|margin-right|margin-top|max-height|max-width|max-zoom|min-height|min-width|min-zoom|nav-down|nav-index|nav-left|nav-right|nav-up|opacity|order|outline|outline-color|outline-offset|outline-style|outline-width|overflow|overflow-x|overflow-y|padding|padding-bottom|padding-left|padding-right|padding-top|page-break-after|page-break-before|page-break-inside|perspective|perspective-origin|position|quotes|resize|right|tab-size|table-layout|text-align|text-align-last|text-decoration|text-decoration-color|text-decoration-line|text-decoration-style|text-indent|text-justify|text-overflow|text-shadow|text-transform|top|transform|transform-origin|transform-style|transition|transition-delay|transition-duration|transition-property|transition-timing-function|unicode-bidi|user-select|user-zoom|vertical-align|visibility|white-space|width|word-break|word-spacing|word-wrap|z-index";
 var supportFunction = exports.supportFunction = "rgb|rgba|url|attr|counter|counters";
-var supportConstant = exports.supportConstant = "absolute|after-edge|after|all-scroll|all|alphabetic|always|antialiased|armenian|auto|avoid-column|avoid-page|avoid|balance|baseline|before-edge|before|below|bidi-override|block-line-height|block|bold|bolder|border-box|both|bottom|box|break-all|break-word|capitalize|caps-height|caption|center|central|char|circle|cjk-ideographic|clone|close-quote|col-resize|collapse|column|consider-shifts|contain|content-box|cover|crosshair|cubic-bezier|dashed|decimal-leading-zero|decimal|default|disabled|disc|disregard-shifts|distribute-all-lines|distribute-letter|distribute-space|distribute|dotted|double|e-resize|ease-in|ease-in-out|ease-out|ease|ellipsis|end|exclude-ruby|fill|fixed|georgian|glyphs|grid-height|groove|hand|hanging|hebrew|help|hidden|hiragana-iroha|hiragana|horizontal|icon|ideograph-alpha|ideograph-numeric|ideograph-parenthesis|ideograph-space|ideographic|inactive|include-ruby|inherit|initial|inline-block|inline-box|inline-line-height|inline-table|inline|inset|inside|inter-ideograph|inter-word|invert|italic|justify|katakana-iroha|katakana|keep-all|last|left|lighter|line-edge|line-through|line|linear|list-item|local|loose|lower-alpha|lower-greek|lower-latin|lower-roman|lowercase|lr-tb|ltr|mathematical|max-height|max-size|medium|menu|message-box|middle|move|n-resize|ne-resize|newspaper|no-change|no-close-quote|no-drop|no-open-quote|no-repeat|none|normal|not-allowed|nowrap|nw-resize|oblique|open-quote|outset|outside|overline|padding-box|page|pointer|pre-line|pre-wrap|pre|preserve-3d|progress|relative|repeat-x|repeat-y|repeat|replaced|reset-size|ridge|right|round|row-resize|rtl|s-resize|scroll|se-resize|separate|slice|small-caps|small-caption|solid|space|square|start|static|status-bar|step-end|step-start|steps|stretch|strict|sub|super|sw-resize|table-caption|table-cell|table-column-group|table-column|table-footer-group|table-header-group|table-row-group|table-row|table|tb-rl|text-after-edge|text-before-edge|text-bottom|text-size|text-top|text|thick|thin|transparent|underline|upper-alpha|upper-latin|upper-roman|uppercase|use-script|vertical-ideographic|vertical-text|visible|w-resize|wait|whitespace|z-index|zero";
+var supportConstant = exports.supportConstant = "absolute|after-edge|after|all-scroll|all|alphabetic|always|antialiased|armenian|auto|avoid-column|avoid-page|avoid|balance|baseline|before-edge|before|below|bidi-override|block-line-height|block|bold|bolder|border-box|both|bottom|box|break-all|break-word|capitalize|caps-height|caption|center|central|char|circle|cjk-ideographic|clone|close-quote|col-resize|collapse|column|consider-shifts|contain|content-box|cover|crosshair|cubic-bezier|dashed|decimal-leading-zero|decimal|default|disabled|disc|disregard-shifts|distribute-all-lines|distribute-letter|distribute-space|distribute|dotted|double|e-resize|ease-in|ease-in-out|ease-out|ease|ellipsis|end|exclude-ruby|fill|fixed|georgian|glyphs|grid-height|groove|hand|hanging|hebrew|help|hidden|hiragana-iroha|hiragana|horizontal|icon|ideograph-alpha|ideograph-numeric|ideograph-parenthesis|ideograph-space|ideographic|inactive|include-ruby|inherit|initial|inline-block|inline-box|inline-line-height|inline-table|inline|inset|inside|inter-ideograph|inter-word|invert|italic|justify|katakana-iroha|katakana|keep-all|last|left|lighter|line-edge|line-through|line|linear|list-item|local|loose|lower-alpha|lower-greek|lower-latin|lower-roman|lowercase|lr-tb|ltr|mathematical|max-height|max-size|medium|menu|message-box|middle|move|n-resize|ne-resize|newspaper|no-change|no-close-quote|no-drop|no-open-quote|no-repeat|none|normal|not-allowed|nowrap|nw-resize|oblique|open-quote|outset|outside|overline|padding-box|page|pointer|pre-line|pre-wrap|pre|preserve-3d|progress|relative|repeat-x|repeat-y|repeat|replaced|reset-size|ridge|right|round|row-resize|rtl|s-resize|scroll|se-resize|separate|slice|small-caps|small-caption|solid|space|square|start|static|status-bar|step-end|step-start|steps|stretch|strict|sub|super|sw-resize|table-caption|table-cell|table-column-group|table-column|table-footer-group|table-header-group|table-row-group|table-row|table|tb-rl|text-after-edge|text-before-edge|text-bottom|text-size|text-top|text|thick|thin|transparent|underline|upper-alpha|upper-latin|upper-roman|uppercase|use-script|vertical-ideographic|vertical-text|visible|w-resize|wait|whitespace|z-index|zero|zoom";
 var supportConstantColor = exports.supportConstantColor = "aliceblue|antiquewhite|aqua|aquamarine|azure|beige|bisque|black|blanchedalmond|blue|blueviolet|brown|burlywood|cadetblue|chartreuse|chocolate|coral|cornflowerblue|cornsilk|crimson|cyan|darkblue|darkcyan|darkgoldenrod|darkgray|darkgreen|darkgrey|darkkhaki|darkmagenta|darkolivegreen|darkorange|darkorchid|darkred|darksalmon|darkseagreen|darkslateblue|darkslategray|darkslategrey|darkturquoise|darkviolet|deeppink|deepskyblue|dimgray|dimgrey|dodgerblue|firebrick|floralwhite|forestgreen|fuchsia|gainsboro|ghostwhite|gold|goldenrod|gray|green|greenyellow|grey|honeydew|hotpink|indianred|indigo|ivory|khaki|lavender|lavenderblush|lawngreen|lemonchiffon|lightblue|lightcoral|lightcyan|lightgoldenrodyellow|lightgray|lightgreen|lightgrey|lightpink|lightsalmon|lightseagreen|lightskyblue|lightslategray|lightslategrey|lightsteelblue|lightyellow|lime|limegreen|linen|magenta|maroon|mediumaquamarine|mediumblue|mediumorchid|mediumpurple|mediumseagreen|mediumslateblue|mediumspringgreen|mediumturquoise|mediumvioletred|midnightblue|mintcream|mistyrose|moccasin|navajowhite|navy|oldlace|olive|olivedrab|orange|orangered|orchid|palegoldenrod|palegreen|paleturquoise|palevioletred|papayawhip|peachpuff|peru|pink|plum|powderblue|purple|rebeccapurple|red|rosybrown|royalblue|saddlebrown|salmon|sandybrown|seagreen|seashell|sienna|silver|skyblue|slateblue|slategray|slategrey|snow|springgreen|steelblue|tan|teal|thistle|tomato|turquoise|violet|wheat|white|whitesmoke|yellow|yellowgreen";
 var supportConstantFonts = exports.supportConstantFonts = "arial|century|comic|courier|cursive|fantasy|garamond|georgia|helvetica|impact|lucida|symbol|system|tahoma|times|trebuchet|utopia|verdana|webdings|sans-serif|serif|monospace";
 
@@ -2689,7 +2942,7 @@ var CssHighlightRules = function() {
             regex: "\\}"
         }, {
             token: "string",
-            regex: "@",
+            regex: "@(?!viewport)",
             next:  "media"
         }, {
             token: "keyword",
@@ -2712,7 +2965,7 @@ var CssHighlightRules = function() {
         }, {
             caseInsensitive: true
         }],
-        
+
         "media": [{
             include : ["strings", "url", "comments"]
         }, {
@@ -2750,6 +3003,9 @@ var CssHighlightRules = function() {
             regex : "-(webkit|ms|moz|o)-",
             token : "text"
         }, {
+            token : "punctuation.operator",
+            regex : "[:;]"
+        }, {
             token : "paren.rparen",
             regex : "\\}",
             next : "start"
@@ -2757,7 +3013,7 @@ var CssHighlightRules = function() {
             include : ["strings", "url", "comments"]
         }, {
             token : ["constant.numeric", "keyword"],
-            regex : "(" + numRe + ")(ch|cm|deg|em|ex|fr|gd|grad|Hz|in|kHz|mm|ms|pc|pt|px|rad|rem|s|turn|vh|vm|vw|%)"
+            regex : "(" + numRe + ")(ch|cm|deg|em|ex|fr|gd|grad|Hz|in|kHz|mm|ms|pc|pt|px|rad|rem|s|turn|vh|vmax|vmin|vm|vw|%)"
         }, {
             token : "constant.numeric",
             regex : numRe
@@ -2781,7 +3037,7 @@ var CssHighlightRules = function() {
         }, {
             caseInsensitive: true
         }],
-        
+
         url: [{
             token : "support.function",
             regex : "(?:url(:?-prefix)?|domain|regexp)\\(",
@@ -2793,7 +3049,7 @@ var CssHighlightRules = function() {
                 defaultToken: "string"
             }]
         }],
-        
+
         strings: [{
             token : "string.start",
             regex : "'",
@@ -2831,7 +3087,7 @@ var CssHighlightRules = function() {
             token : "constant.language.escape",
             regex : /\\([a-fA-F\d]{1,6}|[^a-fA-F\d])/
         }]
-        
+
     };
 
     this.normalizeRules();
@@ -3026,7 +3282,8 @@ var JavaScriptHighlightRules = function(options) {
                 next  : "property"
             }, {
                 token : "storage.type",
-                regex : /=>/
+                regex : /=>/,
+                next  : "start"
             }, {
                 token : "keyword.operator",
                 regex : /--|\+\+|\.{3}|===|==|=|!=|!==|<+=?|>+=?|!|&&|\|\||\?:|[!$%&*+\-~\/^]=?/,
@@ -3663,6 +3920,9 @@ var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
 
 var CsoundDocumentHighlightRules = function() {
 
+    var orchestraHighlightRules = new CsoundOrchestraHighlightRules("csound-");
+    var scoreHighlightRules = new CsoundScoreHighlightRules("csound-score-");
+
     this.$rules = {
         "start": [
             {
@@ -3681,11 +3941,11 @@ var CsoundDocumentHighlightRules = function() {
             }, {
                 token : ["meta.tag.punctuation.tag-open.csound-document", "entity.name.tag.begin.csound-document", "meta.tag.punctuation.tag-close.csound-document"],
                 regex : "(<)(CsInstruments)(>)",
-                next  : "csound-start"
+                next  : orchestraHighlightRules.embeddedRulePrefix + "start"
             }, {
                 token : ["meta.tag.punctuation.tag-open.csound-document", "entity.name.tag.begin.csound-document", "meta.tag.punctuation.tag-close.csound-document"],
                 regex : "(<)(CsScore)(>)",
-                next  : "csound-score-start"
+                next  : scoreHighlightRules.embeddedRulePrefix + "start"
             }, {
                 token : ["meta.tag.punctuation.tag-open.csound-document", "entity.name.tag.begin.csound-document", "meta.tag.punctuation.tag-close.csound-document"],
                 regex : "(<)([Hh][Tt][Mm][Ll])(>)",
@@ -3694,12 +3954,12 @@ var CsoundDocumentHighlightRules = function() {
         ]
     };
 
-    this.embedRules(CsoundOrchestraHighlightRules, "csound-", [{
+    this.embedRules(orchestraHighlightRules.getRules(), orchestraHighlightRules.embeddedRulePrefix, [{
         token : ["meta.tag.punctuation.end-tag-open.csound-document", "entity.name.tag.begin.csound-document", "meta.tag.punctuation.tag-close.csound-document"],
         regex : "(</)(CsInstruments)(>)",
         next  : "synthesizer"
     }]);
-    this.embedRules(CsoundScoreHighlightRules, "csound-score-", [{
+    this.embedRules(scoreHighlightRules.getRules(), scoreHighlightRules.embeddedRulePrefix, [{
         token : ["meta.tag.punctuation.end-tag-open.csound-document", "entity.name.tag.begin.csound-document", "meta.tag.punctuation.tag-close.csound-document"],
         regex : "(</)(CsScore)(>)",
         next  : "synthesizer"
@@ -3731,4 +3991,11 @@ var Mode = function() {
 oop.inherits(Mode, TextMode);
 
 exports.Mode = Mode;
-});
+});                (function() {
+                    ace.require(["ace/mode/csound_document"], function(m) {
+                        if (typeof module == "object" && typeof exports == "object" && module) {
+                            module.exports = m;
+                        }
+                    });
+                })();
+            
