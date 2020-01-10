@@ -1,5 +1,18 @@
 <?php
 
+	echo "	<!-- Custom Calendar CSS based on user preferences -->".PHP_EOL;
+	if (isset($CUSTOMCSS_CAL)) {
+		$cfilename = CALENDAR_PATH.$CUSTOMCSS_CAL;
+		if (file_exists($cfilename)) {
+			echo "	<link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+		} else {
+			echo "	<!-- unable to find the file below from CUSTOMCSS_CAL variable:".PHP_EOL;
+			echo "		<link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+			echo "	-->".PHP_EOL;
+		}
+	}
+
+
   # Default Calendar Layout
   if (isset($events_list)) {
     $year = $events_list['year'];
@@ -66,7 +79,7 @@
           }
           echo "<div class='content-center-day'>";
           if (isset($events_list[$month][$day])) {
-            echo "<b>" . strtoupper($events_list[$month][$day]['type']) . ' ' . $events_list[$month][$day]['type_num'] . "</b><br>";
+            echo "<b class='calCore-cal-" . strtoupper($events_list[$month][$day]['type']) . "'>" . strtoupper($events_list[$month][$day]['type']) . ' ' . $events_list[$month][$day]['type_num'] . "</b><br>";
             foreach($box as $i => $btype) {
               $btype_desc = ucwords(str_ireplace("-", " ", $btype));
               if (isset($events_list[$month][$day]['event']['box'][$btype])) {
@@ -117,7 +130,7 @@
             if (isset($events_list[$month][$day]['combine'])) {
               foreach ($events_list[$month][$day]['combine'] as $new_class => $new_eventsdata) {
                 echo "<br>";
-                echo "<b>" . strtoupper($new_eventsdata['type']) . ' ' . $new_eventsdata['type_num'] . "</b><br>";
+                echo "<b class='calCore-cal-" . strtoupper($events_list[$month][$day]['type']) . "'>" . strtoupper($new_eventsdata['type']) . ' ' . $new_eventsdata['type_num'] . "</b><br>";
                 foreach($box as $i => $btype) {
                   $btype_desc = ucwords(str_ireplace("-", " ", $btype));
                   if (isset($new_eventsdata['event']['box'][$btype])) {
