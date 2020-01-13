@@ -1,5 +1,17 @@
 <?php
 
+	echo "	<!-- Custom Calendar CSS based on user preferences -->".PHP_EOL;
+	if (isset($CUSTOMCSS_CAL)) {
+		$cfilename = CALENDAR_PATH.$CUSTOMCSS_CAL;
+		if (file_exists($cfilename)) {
+			echo "	<link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+		} else {
+			echo "	<!-- unable to find the file below from CUSTOMCSS_CAL variable:".PHP_EOL;
+			echo "		<link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+			echo "	-->".PHP_EOL;
+		}
+	}
+
   # Alternate Homepage display
   if (isset($events_list)) {
     $year = $events_list['year'];

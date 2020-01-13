@@ -130,7 +130,7 @@
             if (isset($events_list[$month][$day]['combine'])) {
               foreach ($events_list[$month][$day]['combine'] as $new_class => $new_eventsdata) {
                 echo "<br>";
-                echo "<b class='calCore-cal-" . strtoupper($events_list[$month][$day]['type']) . "'>" . strtoupper($new_eventsdata['type']) . ' ' . $new_eventsdata['type_num'] . "</b><br>";
+                echo "<b class='calCore-cal-" . strtoupper($new_eventsdata['type']) . "'>" . strtoupper($new_eventsdata['type']) . ' ' . $new_eventsdata['type_num'] . "</b><br>";
                 foreach($box as $i => $btype) {
                   $btype_desc = ucwords(str_ireplace("-", " ", $btype));
                   if (isset($new_eventsdata['event']['box'][$btype])) {
