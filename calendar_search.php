@@ -10,7 +10,7 @@
   }
 
   if (isset($_REQUEST['search'])) {
-    $key = urldecode($_REQUEST['search']);
+    $key = strip_tags(urldecode($_REQUEST['search']));
   } else {
     $key = 'NONE-SPECIFIED';
   }
