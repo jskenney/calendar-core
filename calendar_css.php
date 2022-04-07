@@ -69,9 +69,7 @@
         }
       });
     </script>
-    <script type="text/javascript"
-      src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
-    </script>
+    <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
     <!-- Highlight.js -->
     <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/highlight/styles/color-brewer.css">
