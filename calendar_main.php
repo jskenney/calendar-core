@@ -858,6 +858,7 @@
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($other[$tag_src])) {
         $inject_data = file_get_contents($other[$tag_src]['actual']);
+        $inject_data = str_ireplace('&', '&amp;', $inject_data);
         $inject_data = str_ireplace('<', '&lt;', $inject_data);
         $inject_data = str_ireplace('>', '&gt;', $inject_data);
         $contents = str_ireplace('<codeinject src="'.$tag_src.'">', $inject_data, $contents);
