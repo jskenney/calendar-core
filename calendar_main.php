@@ -649,8 +649,13 @@
   if (isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($events[$_REQUEST['type']])) {
     $other = array_keys($files[$_REQUEST['type']]);
     $other = $files[$_REQUEST['type']][$other[$_REQUEST['event']-1]];
-    $month = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][0];
-    $day = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][1];
+    if (isset($events_list['map'][$_REQUEST['type']][$_REQUEST['event']])) {
+      $month = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][0];
+      $day = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][1];
+    } else {
+      $month=12;
+      $day=31;
+    }
     # Verify Security of other files...
     foreach($other as $ibox => $iset) {
       //  function get_file_security($YEAR, $month, $day, $l0, $l1, $cate, $filename, $access) {
@@ -874,33 +879,33 @@
   # If all these fail, then we strip out the revealed content.
   # Uses the new tag <postmeeting>
   # The time to reveal is from the $REVEALHOUR variable located in calendar.php
-  
+
   if ((!isset($INSTRUCTOR) || !$INSTRUCTOR) && isset($REVEALHOUR)) {
       $today_date_time = getdate();
       if (
             ($today_date_time['year'] > $YEAR)
-         || 
-         ( 
-            ($today_date_time['year'] >= $YEAR) 
-            && 
-            ($today_date_time['mon'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
-         ) 
-         || 
+         ||
          (
-            ($today_date_time['year'] == $YEAR)
-            && 
-            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
-            && 
-            ($today_date_time['mday'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
-         ) 
+            ($today_date_time['year'] >= $YEAR)
+            &&
+            ($today_date_time['mon'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
+         )
          ||
          (
             ($today_date_time['year'] == $YEAR)
-            && 
-            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0]) 
+            &&
+            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
+            &&
+            ($today_date_time['mday'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
+         )
+         ||
+         (
+            ($today_date_time['year'] == $YEAR)
+            &&
+            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
             &&
             ($today_date_time['mday'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
-            && 
+            &&
             ($today_date_time['hours'] >= $REVEALHOUR)
           )
          ){
@@ -919,7 +924,7 @@
     $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
   }
   else {
-    $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '\1', $contents);  
+    $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '\1', $contents);
   }
 
   # Remove all <lock></lock> tags if no code provided
@@ -1128,7 +1133,7 @@ EOF;
                     # code to resolve this issue, another potential logic issue was found.
                     # When it comes down to it, the only time we want a link in the navbar menu is when there
                     # is an id in a header tag or a name in an anchor tag.
-                    
+
                     # Code now does the following:
                     #   1) Checks to see if the attribute being looked at is "id". Thus name is ignored
                     #      (well, not really, it is handled in the if branch of this if..else statement),
@@ -1138,7 +1143,7 @@ EOF;
                     #      This way we dont add duplicate entries for links in the navbar.
                     #   3) Then we determine if the tag type is <a>. We do this because if an anchor tag
                     #      exists in the document with an id value then it will get added to the navbar list.
-                    #      Also, if an <a> tag exists with a name= attribute AND an id= attribute but the 
+                    #      Also, if an <a> tag exists with a name= attribute AND an id= attribute but the
                     #      values of those two are not the same then another entry will be added to the navbar
                     #      list, which is not desired behavior. Only <h[1-6]> tags with id's should be added.
                     #      TL:DR --> if attribute type is anchor and it has an id attribute we don't care.
@@ -1174,7 +1179,7 @@ EOF;
     array_push($idarray, $tagnamearray, $tagvaluearray);
     return array($idarray,$oldLinkMode,$oldLinkModeMessage);
   } #end function findheaders
-  
+
   #Then we call this new function
   list($navbar_menus,$headerWarningFlag,$headerWarningMessage) = findheaders($contents);
   #Then check if we should add the warningMessage
