@@ -36,6 +36,9 @@
     $month_name = cal_info(0);
     $month_name = $month_name['months'][$month];
     $dow = date("w", mktime(0, 0, 0, $month, 1, $year));
+		if (isset($HIDE_WEEKS) && $HIDE_WEEKS === True && $MONTH_START == $month) {
+			$dow = date("w", mktime(0, 0, 0, $month, $HIDE_BEGINNING_DAY, $year));
+		}
     if ($dow == 0) {$dow = 7;}
     echo "<h4>$month_name $year</h4>";
     echo "<table class='table table-striped table-bordered calendar'><thead><tr><th>Monday</th><th>Tuesday</th><th>Wednesday</th><th>Thursday</th><th>Friday</th>";
