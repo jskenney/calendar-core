@@ -1,7 +1,7 @@
 <?php
 
-  # Calendar Version 4.1, J. Kenney 2015-2018
-  define('CALENDAR_VERSION', '4.1.20180324');
+  # Calendar Version 4.2, J. Kenney 2015-2022
+  define('CALENDAR_VERSION', '4.2.20220720');
 
   # Determine what directories should be scanned for files.
   $COMPONENTS = array();
@@ -937,7 +937,7 @@
     $codes = str_replace("'",'', $codes);
     $codes = explode(',', $codes);
     foreach($codes as $rowi => $thiscode) {
-      if ($_SERVER['SERVER_NAME'] == trim($thiscode) || 
+      if ($_SERVER['SERVER_NAME'] == trim($thiscode) ||
           $_SERVER['SERVER_ADDR'] == trim($thiscode) ) {
         $contents = str_ireplace($injects[0][$row], '<unhost>', $contents);
       }
