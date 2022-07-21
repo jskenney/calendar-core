@@ -937,7 +937,8 @@
     $codes = str_replace("'",'', $codes);
     $codes = explode(',', $codes);
     foreach($codes as $rowi => $thiscode) {
-      if ($_SERVER['SERVER_NAME'] == trim($thiscode)) {
+      if ($_SERVER['SERVER_NAME'] == trim($thiscode) || 
+          $_SERVER['SERVER_ADDR'] == trim($thiscode) ) {
         $contents = str_ireplace($injects[0][$row], '<unhost>', $contents);
       }
     }
