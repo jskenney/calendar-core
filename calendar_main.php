@@ -928,6 +928,22 @@
     $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '\1', $contents);
   }
 
+  # Remove the contents of <host server="">...</host> tags if not on the
+  # specified server (use $_SERVER['SERVER_NAME'])
+  preg_match_all('/<host[^>]+>/i', $contents, $injects);
+  foreach($injects[0] as $row => $inject_tag) {
+    preg_match_all('/server=("[^"]*")/i',$inject_tag, $tag_src);
+    $codes = str_replace('"','', $tag_src[1][0]);
+    $codes = str_replace("'",'', $codes);
+    $codes = explode(',', $codes);
+    foreach($codes as $rowi => $thiscode) {
+      if ($_SERVER['SERVER_NAME'] == trim($thiscode)) {
+        $contents = str_ireplace($injects[0][$row], '<unhost>', $contents);
+      }
+    }
+  }
+  $contents = preg_replace('/<host[^>]*>([\s\S]*?)<\/host[^>]*>/', '', $contents);
+
   # Remove all <lock></lock> tags if no code provided
   if (isset($_REQUEST['lock'])) {
     $_SESSION['lock'] = $_REQUEST['lock'];

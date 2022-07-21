@@ -325,6 +325,18 @@ lab/lab-solution           12  15 2020</code></pre>
 &lt;/lock&gt;</code></pre>
 </p>
 
+<a name="hostlock"></a>
+<h4>Lock content if not on a specific server</h4>
+<p>
+  If you would like to prevent content being shown unless the content is being
+  provided by a specific server, such as to prevent solutions from being shown
+  on internet accessible websites, you can use the 
+  <b>&lt;host server=""&gt;</b> ... <b>&lt;/host&gt;</b> tags.
+  <pre><code class="HTML">&lt;host server="ward-rweb-02"&gt;
+  &lt;h5&gt;This information is hidden if not hosted on the server listed.&lt;/h5&gt;
+&lt;/host&gt;</code></pre>
+</p>
+
 <a name="vfiles"></a>
 <h4>Virtual Files</h4>
 <p>
