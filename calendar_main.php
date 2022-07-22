@@ -1,7 +1,7 @@
 <?php
 
-  # Calendar Version 4.2, J. Kenney 2015-2022
-  define('CALENDAR_VERSION', '4.2.20220720');
+  # Calendar Version 4.4, J. Kenney 2015-2022
+  define('CALENDAR_VERSION', '4.4.20220722');
 
   # Determine what directories should be scanned for files.
   $COMPONENTS = array();
