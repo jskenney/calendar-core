@@ -75,8 +75,8 @@
     <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/MathJax-2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
 
     <!-- Highlight.js -->
-    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/highlight/styles/color-brewer.css">
-    <script src='<?php echo CALENDAR_PATH; ?>calendar/highlight/highlight.pack.js'></script>
+    <link rel="stylesheet" href="<?php echo CALENDAR_PATH; ?>calendar/highlight/styles/color-brewer.min.css">
+    <script src='<?php echo CALENDAR_PATH; ?>calendar/highlight/highlight.min.js'></script>
     <script>hljs.initHighlightingOnLoad();</script>
 
     <!-- Font-Awesome -->
