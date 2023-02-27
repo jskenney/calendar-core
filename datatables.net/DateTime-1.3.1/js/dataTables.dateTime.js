@@ -1,4 +1,4 @@
-/*! DateTime picker for DataTables.net v1.3.0
+/*! DateTime picker for DataTables.net v1.3.1
  *
  * © SpryMedia Ltd, all rights reserved.
  * License: MIT datatables.net/license/mit
@@ -40,7 +40,7 @@
 
 /**
  * @summary     DateTime picker for DataTables.net
- * @version     1.3.0
+ * @version     1.3.1
  * @file        dataTables.dateTime.js
  * @author      SpryMedia Ltd
  * @contact     www.datatables.net/contact
@@ -275,7 +275,9 @@ $.extend( DateTime.prototype, {
 			this.s.d = this._dateToUtc(new Date());
 		}
 		else if ( typeof set === 'string' ) {
-			this.s.d = this._convert(set, this.c.format, null);
+			this.s.d = this._dateToUtc(
+				this._convert(set, this.c.format, null)
+			);
 		}
 
 		if ( write || write === undefined ) {
@@ -690,7 +692,7 @@ $.extend( DateTime.prototype, {
 				// String in, date back
 				var match = val.match(/(\d{4})\-(\d{2})\-(\d{2})/ );
 				return match ?
-					new Date( Date.UTC(match[1], match[2]-1, match[3]) ) :
+					new Date( match[1], match[2]-1, match[3] ) :
 					null;
 			}
 		}
@@ -706,13 +708,13 @@ $.extend( DateTime.prototype, {
 
 			return to
 				? dtLux.toFormat(to)
-				: this._dateToUtc(dtLux.toJSDate());
+				: dtLux.toJSDate();
 		}
 		else {
 			// Moment / DayJS
 			var dtMo = val instanceof Date
 				? dateLib.utc( val, undefined, this.c.locale, this.c.strict )
-				: dateLib.utc( val, from, this.c.locale, this.c.strict );
+				: dateLib( val, from, this.c.locale, this.c.strict );
 			
 			if (! dtMo.isValid()) {
 				return null;
@@ -771,6 +773,10 @@ $.extend( DateTime.prototype, {
 	 * @return {Date}   Shifted date
 	 */
 	_dateToUtc: function ( s ) {
+		if (! s) {
+			return s;
+		}
+
 		return new Date( Date.UTC(
 			s.getFullYear(), s.getMonth(), s.getDate(),
 			s.getHours(), s.getMinutes(), s.getSeconds()
@@ -1630,11 +1636,16 @@ DateTime.defaults = {
 	yearRange: 25
 };
 
-DateTime.version = '1.3.0';
+DateTime.version = '1.3.1';
 
 // Global export - if no conflicts
 if (! window.DateTime) {
 	window.DateTime = DateTime;
+}
+
+// Global DataTable
+if (window.DataTable) {
+	window.DataTable.DateTime = DateTime;
 }
 
 // Make available via jQuery
