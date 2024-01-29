@@ -35,10 +35,10 @@
       ?>
       <form method="POST">
         <textarea name="editor" id="myeditor" style="display: none;"></textarea>
-        <input type="hidden" name="key" value="<?php echo $_REQUEST['key']; ?>">
-        <input type="hidden" name="type" value="<?php echo $_REQUEST['type']; ?>">
-        <input type="hidden" name="event" value="<?php echo $_REQUEST['event']; ?>">
-        <input type="hidden" name="edit" value="<?php echo $_REQUEST['edit']; ?>">
+        <input type="hidden" name="key" value="<?php echo strip_tags($_REQUEST['key']); ?>">
+        <input type="hidden" name="type" value="<?php echo strip_tags($_REQUEST['type']); ?>">
+        <input type="hidden" name="event" value="<?php echo strip_tags($_REQUEST['event']); ?>">
+        <input type="hidden" name="edit" value="<?php echo strip_tags($_REQUEST['edit']); ?>">
         <br><input type="submit" value="Save Changes"> &nbsp; <input type="submit" name="preview" value="Save and Toggle Side Preview Mode">
       </form>
       <?php if ($_SESSION['previewmode']) { ?>

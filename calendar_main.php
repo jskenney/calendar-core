@@ -798,12 +798,12 @@
 
     # Replace image <img src>, <source src= />,  and anchor <a href> links with the key'd version of the file
     foreach ($other as $fn => $value) {
-      $link = "calendar.php?key=".$value['key'];
+      $link = "calendar.php?key=". strip_tags($value['key']);
       if (isset($_REQUEST['type'])) {
-        $link .= '&type=' . $_REQUEST['type'];
+        $link .= '&type=' . strip_tags($_REQUEST['type']);
       }
       if (isset($_REQUEST['event'])) {
-        $link .= '&event=' . $_REQUEST['event'];
+        $link .= '&event=' . strip_tags($_REQUEST['event']);
       }
       $contents = str_ireplace('<img src="'.$fn.'"', '<img src="'.$link.'"', $contents);
       $contents = str_ireplace("<img src='".$fn."'", "<img src='".$link."'", $contents);

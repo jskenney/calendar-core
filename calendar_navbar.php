@@ -86,15 +86,15 @@
           if (isset($find_student) && $find_student && isset($_REQUEST['type']) && isset($_REQUEST['event'])) {
             $key_link = "";
             if (isset($_REQUEST['key'])) {
-              $key_link = "&key=".$_REQUEST['key'];
+              $key_link = "&key=". strip_tags($_REQUEST['key']);
             }
             if (!isset($_REQUEST['answers'])) {
-              $unlock_link = "calendar.php?type=" . $_REQUEST['type'] . "&event=" . $_REQUEST['event'] . "$key_link&answers=yes";
+              $unlock_link = "calendar.php?type=" . strip_tags($_REQUEST['type']) . "&event=" . strip_tags($_REQUEST['event']) . "$key_link&answers=yes";
               echo PHP_EOL."<li><a title='Show Problem Answers' href='$unlock_link'>";
               echo '<span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>';
               echo '</a></li>'.PHP_EOL;
             } else {
-              $lock_link = "calendar.php?type=" . $_REQUEST['type'] . "&event=" . $_REQUEST['event'] . $key_link;
+              $lock_link = "calendar.php?type=" . strip_tags($_REQUEST['type']) . "&event=" . strip_tags($_REQUEST['event']) . $key_link;
               echo PHP_EOL."<li><a title='Hide Problem Answers' href='$lock_link'>";
               echo '<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>';
               echo '</a></li>'.PHP_EOL;
@@ -139,10 +139,10 @@
                 foreach ($other as $fn => $value) {
                   $link = "calendar.php?key=".$value['key'];
                   if (isset($_REQUEST['type'])) {
-                    $link .= '&type=' . $_REQUEST['type'];
+                    $link .= '&type=' . strip_tags($_REQUEST['type']);
                   }
                   if (isset($_REQUEST['event'])) {
-                    $link .= '&event=' . $_REQUEST['event'];
+                    $link .= '&event=' . strip_tags($_REQUEST['event']);
                   }
                   echo "<li><a href='$link'>$fn</a></li>".PHP_EOL;
                 }
