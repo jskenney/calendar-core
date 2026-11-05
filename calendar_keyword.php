@@ -33,7 +33,7 @@
           } else {
             $color = "";
           }
-          if (isset($events_list[$month][$day]['event']['box']['title']['type']) && $events_list[$month][$day]['event']['box']['title']['type'] == 'html') {
+          if (isset($events_list[$month][$day]['event']['box']['title']['type']) && in_array($events_list[$month][$day]['event']['box']['title']['type'], array('html', 'md'), True)) {
             $actual = $events_list[$month][$day]['event']['box']['title']['actual'];
             $myfound = False;
             if (file_exists($actual)) {

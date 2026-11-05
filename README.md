@@ -25,6 +25,11 @@ git submodule update --init --recursive
 git submodule update --remote
 ```
 
+# Markdown
+Course pages can be written in Markdown: any `.md` file (for example `index.md` in a class
+directory) is converted to HTML and processed exactly like an `.html` file.  See the
+Markdown section of the instructor guide (`instructor.html`) for details.
+
 # Running the tests
 The regression tests build a small fixture course in a temporary directory, start PHP's
 built-in web server, and check the calendar over HTTP (they also fail on any PHP warning).

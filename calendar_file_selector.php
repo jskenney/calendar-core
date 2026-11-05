@@ -20,7 +20,7 @@
       echo "<td>".h($value['dynamic'])."</td>";
       $link .='&edit=1';
       $ext = pathinfo($fn, PATHINFO_EXTENSION);
-      if ($ext == 'htm' || $ext == 'html') {
+      if ($ext == 'htm' || $ext == 'html' || $ext == 'md') {
         echo "<td><a href='".h($link)."'>view</a></td>";
       } else {
         echo "<td></td>";
