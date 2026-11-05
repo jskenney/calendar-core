@@ -316,3 +316,10 @@ code {
 
 
 }
+
+/* Markdown (.md) pages */
+.cal4-markdown img { max-width: 100%; height: auto; }
+.cal4-markdown table { width: auto; }
+.cal4-markdown blockquote { font-size: inherit; }
+.cal4-markdown li.task-list-item { list-style: none; }
+.cal4-markdown li.task-list-item > input[type=checkbox] { margin: 0 0.4em 0 -1.4em; }

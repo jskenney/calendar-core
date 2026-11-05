@@ -11,7 +11,9 @@
   }
 
   # Only html files can be edited.
-  $cal4_edit_ok = isset($actual_file) && in_array(strtolower(pathinfo($actual_file, PATHINFO_EXTENSION)), array('html', 'htm'), True);
+  $cal4_edit_ok = isset($actual_file) && in_array(strtolower(pathinfo($actual_file, PATHINFO_EXTENSION)), array('html', 'htm', 'md'), True);
+  # The side preview shows html as typed; Markdown has no live preview.
+  $cal4_edit_md = isset($actual_file) && strtolower(pathinfo($actual_file, PATHINFO_EXTENSION)) === 'md';
   $cal4_is_post = isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'POST';
   $cal4_token_ok = $cal4_is_post && isset($_POST['csrf']) && is_string($_POST['csrf']) && hash_equals($_SESSION['cal4-csrf'], $_POST['csrf']);
 
@@ -20,7 +22,7 @@
   }
 
   if ($INSTRUCTOR && !$cal4_edit_ok) {
-    echo "<h5>Only .html and .htm files can be edited.</h5>";
+    echo "<h5>Only .html, .htm and .md files can be edited.</h5>";
   } elseif ($INSTRUCTOR) {
 ?>
 
@@ -73,10 +75,10 @@
   <script type="text/javascript">
       var htmleditor = ace.edit("htmleditor");
       htmleditor.setTheme("ace/theme/crimson_editor");
-      htmleditor.getSession().setMode("ace/mode/html_elixir");
+      htmleditor.getSession().setMode("ace/mode/<?php echo $cal4_edit_md ? 'markdown' : 'html_elixir'; ?>");
       htmleditor.renderer.setShowGutter(false);
       function showHTMLInIFramehtmleditor() {
-        <?php if ($_SESSION['previewmode']) { ?>
+        <?php if ($_SESSION['previewmode'] && !$cal4_edit_md) { ?>
           $('#ace_htmleditor').html(htmleditor.getValue());
         <?php } ?>
 

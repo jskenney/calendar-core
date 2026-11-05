@@ -1,7 +1,20 @@
 <?php
 
-  # Calendar Version 4.5, J. Kenney 2015-2026
-  define('CALENDAR_VERSION', '4.5.20261105');
+  # Calendar Version 4.6, J. Kenney 2015-2026
+  define('CALENDAR_VERSION', '4.6.20261105');
+
+  # Markdown (.md) support
+  require_once(__DIR__ . '/calendar_markdown.php');
+
+  # Heading levels in .md files that get an id (and a navbar menu entry)
+  if (!isset($MARKDOWN_MENU_LEVELS) || !is_array($MARKDOWN_MENU_LEVELS)) {
+    $MARKDOWN_MENU_LEVELS = array(2);
+  }
+
+  # Is this file name a Markdown file?
+  function cal4_is_markdown($filename) {
+    return strtolower(pathinfo((string)$filename, PATHINFO_EXTENSION)) === 'md';
+  }
 
   # Escape a value for safe output inside HTML text or a quoted attribute.
   if (!function_exists('h')) {
@@ -429,9 +442,19 @@
   }
 
   # Build type tree
-  function build_types($BOX, $HTML, $LINK, $PDF, $PPT, $SRC) {
+  # $MD lists Markdown files (rendered like html).  When it is not configured,
+  # every .html name in $HTML also gets a .md twin (index.html -> index.md).
+  function build_types($BOX, $HTML, $LINK, $PDF, $PPT, $SRC, $MD = null) {
     $categories = array();
-    foreach (array('html'=>$HTML, 'link'=>$LINK, 'pdf'=>$PDF, 'ppt'=>$PPT, 'src'=>$SRC) as $item => $values) {
+    if (!is_array($MD)) {
+      $MD = array();
+      foreach ($HTML as $cat => $value) {
+        if (preg_match('/\.html?$/i', $value)) {
+          $MD[$cat] = preg_replace('/\.html?$/i', '.md', $value);
+        }
+      }
+    }
+    foreach (array('md'=>$MD, 'html'=>$HTML, 'link'=>$LINK, 'pdf'=>$PDF, 'ppt'=>$PPT, 'src'=>$SRC) as $item => $values) {
       foreach ($values as $cat => $value) {
         $categories[$value] = array('type'=>$item, 'boxblock'=>$cat);
       }
@@ -637,7 +660,7 @@
   }
 
   # Determine the valid categories for files
-  $categories = build_types($BOX, $HTML, $LINK, $PDF, $PPT, $SRC);
+  $categories = build_types($BOX, $HTML, $LINK, $PDF, $PPT, $SRC, isset($MD) ? $MD : null);
 
   # Set valid logon time (based on cookie auth)
   if (!isset($LOGON_TIME)) {
@@ -890,7 +913,7 @@
       $today_mon = $today['mon'];
       $today_day = $today['mday'];
       if (isset($events_list[$today_mon][$today_day]['event']['box']['title'])) {
-        if (isset($events_list[$today_mon][$today_day]['event']['box']['title']['type']) && $events_list[$today_mon][$today_day]['event']['box']['title']['type'] == 'html') {
+        if (isset($events_list[$today_mon][$today_day]['event']['box']['title']['type']) && in_array($events_list[$today_mon][$today_day]['event']['box']['title']['type'], array('html', 'md'), True)) {
           $_REQUEST['type'] = $events_list[$today_mon][$today_day]['type'];
           $_REQUEST['event'] = $events_list[$today_mon][$today_day]['type_num'];
         }
@@ -928,8 +951,9 @@
       }
     }
 
-    # If the source is not html, provide the unprocessed file
-    if ($file_type != 'html' && $ext != 'html' && $actual != '' && $ext != 'htm' && !isset($_REQUEST['navbaronly'])) {
+    # If the source is not html (or markdown), provide the unprocessed file
+    $is_page = in_array($file_type, array('html', 'md'), True) || in_array(strtolower($ext), array('html', 'htm', 'md'), True);
+    if (!$is_page && $actual != '' && !isset($_REQUEST['navbaronly'])) {
       provide_file($actual);
       die;
     } elseif ($ext == 'htm') {
@@ -941,11 +965,15 @@
       $navbar_display = $events[$_REQUEST['type']][$_REQUEST['event']]['name'];
     }
 
-    # Retrieve the contents of this file
+    # Retrieve the contents of this file (Markdown is converted to html here,
+    # so all of the tag processing below applies to it as well)
     if ($actual != '') {
       $contents = file_get_contents($actual);
       $contents_clean = $contents;
       $actual_file = $actual;
+      if (cal4_is_markdown($actual)) {
+        $contents = '<div class="cal4-markdown">' . PHP_EOL . cal4_markdown($contents, $MARKDOWN_MENU_LEVELS) . PHP_EOL . '</div>';
+      }
     }
   }
 
@@ -970,6 +998,8 @@
         $contents = file_get_contents('calendar/'.$cal4_load.'.html');
       } elseif (file_exists($cal4_load.'.html')) {
         $contents = file_get_contents($cal4_load.'.html');
+      } elseif (file_exists($cal4_load.'.md')) {
+        $contents = '<div class="cal4-markdown">' . PHP_EOL . cal4_markdown(file_get_contents($cal4_load.'.md'), $MARKDOWN_MENU_LEVELS) . PHP_EOL . '</div>';
       }
     }
   }
@@ -1048,6 +1078,9 @@
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($other[$tag_src])) {
         $inject_data = file_get_contents($other[$tag_src]['actual']);
+        if (cal4_is_markdown($other[$tag_src]['actual'])) {
+          $inject_data = cal4_markdown($inject_data, $MARKDOWN_MENU_LEVELS);
+        }
         $inject_src[] = $tag_src;
         $contents = str_ireplace('<inject src="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<inject src='$tag_src'>", $inject_data, $contents);

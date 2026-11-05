@@ -179,3 +179,9 @@
            lines to the instructor.
          - BUG FIX: Directories sort in natural order (1, 2, 10), names keep
            everything after the first dot, nested hidden files are ignored.
+20261105 - NEW: Markdown support.  Files ending in .md are converted to html
+           and processed like html files (all Cal4 tags work inside them).
+           By default every $HTML name also accepts a .md version
+           (index.md, homework.md, ...); configure with $MD.  ## headings
+           appear in the navbar menu ($MARKDOWN_MENU_LEVELS).  .md files work
+           with <inject>, ?load= pages, search and the editor.

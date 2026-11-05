@@ -67,7 +67,7 @@ $base = <<<'PHP'
   $DEFAULT_TODAYS_LECTURE = False;
   $ACCESS_FILE = 'virtual/cal4.access';
   $CLASS_FILE = 'virtual/cal4.virtual';
-  $LOAD_PAGES = array('extra');
+  $LOAD_PAGES = array('extra', 'mdpage');
   $BOX = array(0 => 'title', 1 => 'homework', 2 => 'notes');
   $HTML = array('title' => 'index.html', 'homework' => 'homework.html');
   $LINK = array();
@@ -87,10 +87,12 @@ put("$root/sample_secret.php", "<?php require 'base.php'; \$COURSE = 'SAMPLE1'; 
 put("$root/weak_secret.php", "<?php require 'base.php'; \$COURSE = 'WEAK1'; \$SECRET = 'short';\n$main");
 put("$root/debug.php", "<?php require 'base.php'; \$DEBUG_MODE = True;\n$main");
 put("$root/locked.php", "<?php require 'base.php'; \$LOCK = True;\n$main");
+put("$root/md_off.php", "<?php require 'base.php'; \$MD = array();\n$main");
 
 put("$root/home.html", "<h1>HOME-PAGE <replace value=\"coursename\"></h1>");
 put("$root/extra.html", "EXTRA-PAGE");
 put("$root/notlisted.html", "NOT-LISTED-PAGE");
+put("$root/mdpage.md", "# Root Markdown\n\nRoot **page** for <replace value=\"course\">.");
 put("$root/logs/access.log", "");
 put("$root/shared docs/extra file.html", "VIRTUAL-EXTRA");
 
@@ -133,6 +135,24 @@ put("$root/lab/10.Gamma/index.html", "LAB-C");
 put("$root/exam/01.Mid/index.html", "EXAM-ONE");
 put("$root/exam/02.Mid2/index.html", "EXAM-TWO");
 put("$root/exam/03.Secret/index.html", "SECRET-EXAM-3");
+// class 4: Markdown title page, Markdown homework, injected Markdown
+put("$root/class/04.Markdown/index.md",
+    "# Markdown Lecture\n\n"
+  . "Intro with *emphasis* and `a<b` code, course <replace value=\"course\">.\n\n"
+  . "## Part One\n\n"
+  . "Inline math \\(x^2\\) and display \$\$\\sum_i x_i\$\$.\n\n"
+  . "![diagram](pic.png)\n\n"
+  . "[the homework](homework.md) and [slides](slides.pdf)\n\n"
+  . "<inst>\n\n**INSTRUCTOR-MD-ONLY**\n\n</inst>\n\n"
+  . "<inject src=\"part.md\">\n\n"
+  . "```python\nprint(1 < 2)\n```\n\n"
+  . "| Col A | Col B |\n|---|---|\n| mdcell | 2 |\n\n"
+  . "searchable-md-word\n");
+put("$root/class/04.Markdown/homework.md", "Do **problem 7**.");
+put("$root/class/04.Markdown/part.md", "## Injected Part\n\n- injected item");
+put("$root/class/04.Markdown/pic.png", "PNG4");
+put("$root/class/04.Markdown/slides.pdf", "%PDF-4");
+put("$root/class/04.Markdown/notes.md", "raw notes");
 // 'Final Exam' override
 put("$root/final-exam/01.Final/index.html", "FINAL-CONTENT");
 
@@ -249,7 +269,7 @@ check(file_get_contents($f) === 'EDITED', 'POST with token saves');
 file_put_contents($f, 'HOMEWORK-ONE');
 $r = req("calendar.php?edit=1&navbaronly=1&key=$kp&type=class&event=1", $teacher, array('editor' => '<?php echo 1;', 'csrf' => $token));
 check(file_get_contents("$root/class/01.Intro/pic.png") === 'PNGDATA', 'non-html file can not be overwritten');
-check(strpos($r['body'], 'Only .html and .htm files') !== false, 'editor explains html-only');
+check(strpos($r['body'], 'Only .html, .htm and .md files') !== false, 'editor explains html-only');
 req("calendar.php?edit=1&navbaronly=1&key=$kh&type=class&event=1", $student, array('editor' => 'STUDENT', 'csrf' => $token));
 check(file_get_contents($f) === 'HOMEWORK-ONE', 'students can not save');
 $fresh = array();
@@ -373,6 +393,49 @@ $r = req('calendar.php?debug=1&type=class&event=1', $teacher);
 check(strpos($r['body'], '$keypairs=') === false, 'L-13 debug output off by default');
 $r = req('debug.php?debug=1&type=class&event=1', $teacher);
 check(strpos($r['body'], '$keypairs=') !== false, 'L-13 debug output with $DEBUG_MODE');
+
+section('Markdown (.md) files');
+$k4 = key_for('class', '04.Markdown', 'pic.png');
+$r = req('calendar.php?type=class&event=4', $student);
+check(stripos($r['headers'], 'Content-Type: text/html') !== false, 'index.md is served as a rendered page');
+check(strpos($r['body'], '<h1>Markdown Lecture</h1>') !== false, 'heading rendered');
+check(strpos($r['body'], '<em>emphasis</em>') !== false && strpos($r['body'], '<code>a&lt;b</code>') !== false, 'inline markup rendered');
+check(strpos($r['body'], 'course TST101.') !== false, '<replace> works inside Markdown');
+check(strpos($r['body'], '<h2 id="part-one">Part One</h2>') !== false, 'h2 gets an id');
+check(strpos($r['body'], '<a href="#part-one">Part one</a>') !== false, 'h2 appears in the navbar menu');
+check(strpos($r['body'], '\\(x^2\\)') !== false && strpos($r['body'], '$$\\sum_i x_i$$') !== false, 'MathJax delimiters preserved');
+check(strpos($r['body'], '<img src="calendar.php?key=' . $k4 . '&type=class&event=4"') !== false, 'Markdown image rewritten to keyed link');
+check(strpos($r['body'], '<a href="calendar.php?key=' . key_for('class', '04.Markdown', 'homework.md') . '&type=class&event=4">the homework</a>') !== false, 'Markdown link rewritten to keyed link');
+check(strpos($r['body'], 'INSTRUCTOR-MD-ONLY') === false, '<inst> block hidden from students');
+check(strpos($r['body'], '<h2 id="injected-part">Injected Part</h2>') !== false && strpos($r['body'], '<li>injected item</li>') !== false, '<inject src="part.md"> is rendered');
+check(strpos($r['body'], '<code class="language-python">print(1 &lt; 2)') !== false, 'fenced code block rendered');
+check(strpos($r['body'], '<td>mdcell</td>') !== false, 'table rendered');
+$r = req('calendar.php?type=class&event=4', $teacher);
+check(strpos($r['body'], '<strong>INSTRUCTOR-MD-ONLY</strong>') !== false, '<inst> block (with Markdown inside) shown to instructor');
+$r = req('calendar.php?key=' . key_for('class', '04.Markdown', 'homework.md') . '&type=class&event=4', $student);
+check(strpos($r['body'], 'Do <strong>problem 7</strong>.') !== false, 'keyed homework.md is rendered');
+$r = req('calendar.php?key=' . key_for('class', '04.Markdown', 'notes.md') . '&type=class&event=4', $student);
+check(strpos($r['body'], '<p>raw notes</p>') !== false, 'any .md file in the event is rendered');
+$r = req('calendar.php?key=' . key_for('class', '04.Markdown', 'slides.pdf') . '&type=class&event=4', $student);
+check($r['body'] === '%PDF-4', 'other file types are still served unchanged');
+$r = req('calendar.php?show=calendar_display', $student);
+check(strpos($r['body'], "calendar.php?type=class&event=4'>Markdown</a>") !== false, 'index.md is the calendar title link');
+check(strpos($r['body'], key_for('class', '04.Markdown', 'homework.md')) !== false, 'homework.md fills the homework box');
+$r = req('md_off.php?show=calendar_display', $student);
+check(strpos($r['body'], key_for('class', '04.Markdown', 'homework.md')) === false, '$MD = array() turns off Markdown categories');
+$r = req('calendar.php?show=calendar_search&search=searchable-md-word', $student);
+check(strpos($r['body'], 'Class 4</td>') !== false, 'search finds Markdown pages');
+$r = req('calendar.php?load=mdpage', $student);
+check(strpos($r['body'], '<h1>Root Markdown</h1>') !== false && strpos($r['body'], 'Root <strong>page</strong> for TST101.') !== false, '?load= renders a root .md page');
+$r = req('calendar.php?navbaronly=1&type=class&event=4', $teacher);
+check(strpos($r['body'], "edit=1'>view</a>") !== false, 'file list offers view/edit for .md');
+$kmd = key_for('class', '04.Markdown', 'homework.md');
+$r = req("calendar.php?edit=1&navbaronly=1&key=$kmd&type=class&event=4", $teacher);
+check(strpos($r['body'], 'ace/mode/markdown') !== false, 'editor uses Markdown mode');
+check(strpos($r['body'], 'Do **problem 7**.') !== false, 'editor shows the Markdown source');
+preg_match('/name="csrf" value="([0-9a-f]+)"/', $r['body'], $m);
+req("calendar.php?edit=1&navbaronly=1&key=$kmd&type=class&event=4", $teacher, array('editor' => 'Edited **md**', 'csrf' => isset($m[1]) ? $m[1] : ''));
+check(file_get_contents("$root/class/04.Markdown/homework.md") === 'Edited **md**', 'editor saves .md files');
 
 /* --------------------------------------------------------------- summary */
 echo "\n$passes passed, $failures failed\n";

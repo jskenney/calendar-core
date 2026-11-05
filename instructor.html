@@ -68,6 +68,55 @@ lab/01.The first lab</code></pre>
   start with simple HTML.
 </p>
 
+<a name="markdown"></a>
+<h4>Markdown</h4>
+<p>
+  Any file ending in <b>.md</b> is converted from Markdown to HTML and then presented exactly like an
+  HTML file, so the navbar, CSS, MathJax, code highlighting and every tag described on this page
+  (<b>&lt;inst&gt;</b>, <b>&lt;student&gt;</b>, <b>&lt;inject&gt;</b>, <b>&lt;replace&gt;</b>, <b>&lt;lock&gt;</b>, ...)
+  work in Markdown files too.  For example, <b>index.md</b> can replace <b>index.html</b> as the page
+  for a class:
+</p>
+<pre><code class="markdown"># Loops
+
+Today we cover **for** and **while** loops, see the [lab handout](handout.pdf).
+
+## Counting
+
+```python
+for i in range(10):
+    print(i)
+```
+
+The sum is \( \frac{n(n+1)}{2} \).
+
+![diagram](loop.png)
+
+&lt;inst&gt;
+
+**Remind the class about the quiz.**
+
+&lt;/inst&gt;</code></pre>
+<ul>
+  <li><b>Calendar boxes:</b> unless you set <b>$MD</b> in <a href=calendar.php>calendar.php</a>, every
+      name in <b>$HTML</b> also accepts a Markdown version (index.md, homework.md, notes.md, ...).
+      To choose the names yourself use, for example, <code>$MD = array('title' =&gt; 'lecture.md');</code>
+      and <code>$MD = array();</code> turns this off.  If a directory has both <b>index.html</b> and
+      <b>index.md</b>, the html file is used.</li>
+  <li><b>Other .md files</b> in a class directory are rendered when opened through the navbar or a link.</li>
+  <li><b>Links and images</b> to files in the same directory (<code>[notes](notes.pdf)</code>,
+      <code>![pic](pic.png)</code>) are rewritten the same way as in HTML files.</li>
+  <li><b>Navbar menu:</b> <code>##</code> headings get an id and appear in the navbar drop down.  Change the
+      levels with <code>$MARKDOWN_MENU_LEVELS = array(2, 3);</code>, or set a custom id with
+      <code>## Heading {#my-id}</code>.</li>
+  <li><b>HTML and Cal4 tags</b> can be used directly.  Markdown inside a tag such as
+      <b>&lt;inst&gt;</b> is converted only when it is separated from the tags by blank lines (as above).</li>
+  <li><b>Math:</b> <code>\( \)</code>, <code>\[ \]</code> and <code>$$ $$</code> are left untouched for MathJax.</li>
+  <li><b>Also supported:</b> tables, block quotes, nested lists, task lists (<code>- [x] done</code>),
+      ~~strikethrough~~, reference links, and <code>&lt;inject src="part.md"&gt;</code> (the injected file is
+      converted too).  Root pages such as <b>home.md</b> work with <code>?load=</code>.  The editor can edit .md files.</li>
+</ul>
+
 <h4>LaTex and Formulas</h4>
 <p>
   The <b>MathJax</b> library is included by default, and will allow you
