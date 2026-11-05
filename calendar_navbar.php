@@ -25,7 +25,7 @@
           <ul class="nav navbar-nav">
 
             <li><a href="calendar.php?load=home">
-                <?php echo $COURSE; ?> - <?php echo $COURSENAME; ?></a></li>
+                <?php echo h($COURSE); ?> - <?php echo h($COURSENAME); ?></a></li>
 
             <?php
             if (!$INSTRUCTOR && isset($LOCK) && ($LOCK === true || file_exists($LOCK))) {
@@ -35,7 +35,7 @@
                     <span class="glyphicon glyphicon-lock" aria-hidden="true"></span>
                   </a>
                   <ul class="dropdown-menu  scrollable-menu">
-                  <li><form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">'
+                  <li><form method=post class="navbar-form navbar-left" role="search" onsubmit="return hashPassword()">
                     <div class="input-group">
                       <input type="password" class="form-control" placeholder="" name="password" id="password">
                       <div class="input-group-btn">
@@ -86,16 +86,16 @@
           if (isset($find_student) && $find_student && isset($_REQUEST['type']) && isset($_REQUEST['event'])) {
             $key_link = "";
             if (isset($_REQUEST['key'])) {
-              $key_link = "&key=". strip_tags($_REQUEST['key']);
+              $key_link = "&key=". rawurlencode($_REQUEST['key']);
             }
             if (!isset($_REQUEST['answers'])) {
-              $unlock_link = "calendar.php?type=" . strip_tags($_REQUEST['type']) . "&event=" . strip_tags($_REQUEST['event']) . "$key_link&answers=yes";
-              echo PHP_EOL."<li><a title='Show Problem Answers' href='$unlock_link'>";
+              $unlock_link = "calendar.php?type=" . rawurlencode($_REQUEST['type']) . "&event=" . rawurlencode($_REQUEST['event']) . "$key_link&answers=yes";
+              echo PHP_EOL."<li><a title='Show Problem Answers' href='".h($unlock_link)."'>";
               echo '<span class="glyphicon glyphicon-eye-close" aria-hidden="true"></span>';
               echo '</a></li>'.PHP_EOL;
             } else {
-              $lock_link = "calendar.php?type=" . strip_tags($_REQUEST['type']) . "&event=" . strip_tags($_REQUEST['event']) . $key_link;
-              echo PHP_EOL."<li><a title='Hide Problem Answers' href='$lock_link'>";
+              $lock_link = "calendar.php?type=" . rawurlencode($_REQUEST['type']) . "&event=" . rawurlencode($_REQUEST['event']) . $key_link;
+              echo PHP_EOL."<li><a title='Hide Problem Answers' href='".h($lock_link)."'>";
               echo '<span class="glyphicon glyphicon-eye-open" aria-hidden="true"></span>';
               echo '</a></li>'.PHP_EOL;
             }
@@ -137,14 +137,8 @@
               if ($INSTRUCTOR && !empty($other)) {
                 echo '<li class="dropdown-header">Associated Files</li>'.PHP_EOL;
                 foreach ($other as $fn => $value) {
-                  $link = "calendar.php?key=".$value['key'];
-                  if (isset($_REQUEST['type'])) {
-                    $link .= '&type=' . strip_tags($_REQUEST['type']);
-                  }
-                  if (isset($_REQUEST['event'])) {
-                    $link .= '&event=' . strip_tags($_REQUEST['event']);
-                  }
-                  echo "<li><a href='$link'>$fn</a></li>".PHP_EOL;
+                  $link = cal4_file_link($value['key'], isset($_REQUEST['type']) ? $_REQUEST['type'] : null, isset($_REQUEST['event']) ? $_REQUEST['event'] : null);
+                  echo "<li><a href='".h($link)."'>".h($fn)."</a></li>".PHP_EOL;
                 }
                 echo '<li role="separator" class="divider"></li>'.PHP_EOL;
               }

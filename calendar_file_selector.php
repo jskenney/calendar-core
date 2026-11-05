@@ -9,25 +9,19 @@
     echo "</thead>";
     echo "<tbody>";
     foreach ($other as $fn => $value) {
-      $link = "calendar.php?key=".$value['key'];
-      if (isset($_REQUEST['type'])) {
-        $link .= '&type=' . $_REQUEST['type'];
-      }
-      if (isset($_REQUEST['event'])) {
-        $link .= '&event=' . $_REQUEST['event'];
-      }
-      echo "<tr><td>".$value['type']."</td>";
-      echo "<td>".$value['category']."</td>";
-      echo "<td><a href='$link'>$fn</a></td>";
-      echo "<td>".$value['visible']."</td>";
-      echo "<td>".$value['month']."</td>";
-      echo "<td>".$value['day']."</td>";
-      echo "<td>".$value['year']."</td>";
-      echo "<td>".$value['dynamic']."</td>";
+      $link = cal4_file_link($value['key'], isset($_REQUEST['type']) ? $_REQUEST['type'] : null, isset($_REQUEST['event']) ? $_REQUEST['event'] : null);
+      echo "<tr><td>".h($value['type'])."</td>";
+      echo "<td>".h($value['category'])."</td>";
+      echo "<td><a href='".h($link)."'>".h($fn)."</a></td>";
+      echo "<td>".h($value['visible'])."</td>";
+      echo "<td>".h($value['month'])."</td>";
+      echo "<td>".h($value['day'])."</td>";
+      echo "<td>".h($value['year'])."</td>";
+      echo "<td>".h($value['dynamic'])."</td>";
       $link .='&edit=1';
       $ext = pathinfo($fn, PATHINFO_EXTENSION);
       if ($ext == 'htm' || $ext == 'html') {
-        echo "<td><a href='$link'>view</a></td>";
+        echo "<td><a href='".h($link)."'>view</a></td>";
       } else {
         echo "<td></td>";
       }

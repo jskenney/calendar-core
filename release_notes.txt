@@ -151,3 +151,31 @@
            To calendar.php to switch to alternate view.
 20180324 - Modified logon to use Ajax so back button will no longer cause
            issues after logging on.
+20261105 - SECURITY: Access rules are now enforced when a file is served.
+           Events that are not placed on a calendar day are never shown
+           to students.
+         - SECURITY: The event, type and key parameters are validated
+           (event must be a plain positive number, type a configured
+           component), closing an access-rule bypass and PHP 8 crashes.
+         - SECURITY: The calendar refuses to run with the sample $SECRET;
+           installer.sh now generates a random 64 character secret.
+         - SECURITY: The in-browser editor only saves .html/.htm files, only
+           via POST, and requires a per-session token (CSRF protection).
+           Cookies are HttpOnly, SameSite=Lax, and Secure over HTTPS.
+         - SECURITY: Request values written into pages are HTML escaped.
+         - SECURITY: ?show= and ?load= only accept known pages; add your own
+           root pages with $LOAD_PAGES.  Symbolic link targets must be
+           inside the course directory (or $ALLOWED_PATHS).
+         - SECURITY: ?debug requires $DEBUG_MODE = True.  Passwords and
+           lock codes are removed from the access log.
+         - REMOVED: The legacy filename.month.day.ext date locking format.
+         - BUG FIX: $REVEALHOUR / <postmeeting> no longer crashes.
+         - BUG FIX: $OVERRIDE types with spaces or capitals ('Final Exam')
+           now match their directory (final-exam).
+         - BUG FIX: Search lists every matching page, including pages with
+           a single match.  Search is now plain text, not a regex.
+         - BUG FIX: Access and virtual files ignore # comments and blank
+           lines, support tab separated paths with spaces, and report bad
+           lines to the instructor.
+         - BUG FIX: Directories sort in natural order (1, 2, 10), names keep
+           everything after the first dot, nested hidden files are ignored.

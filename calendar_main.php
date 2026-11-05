@@ -1,31 +1,144 @@
 <?php
 
-  # Calendar Version 4.4, J. Kenney 2015-2024
-  define('CALENDAR_VERSION', '4.4.20240129');
+  # Calendar Version 4.5, J. Kenney 2015-2026
+  define('CALENDAR_VERSION', '4.5.20261105');
+
+  # Escape a value for safe output inside HTML text or a quoted attribute.
+  if (!function_exists('h')) {
+    function h($value) {
+      return htmlspecialchars((string)$value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+  }
+
+  # Build a link to a keyed file within the current event.  Every value is URL
+  # encoded so the link is safe inside a quoted HTML attribute.
+  function cal4_file_link($key, $type = null, $event = null) {
+    $link = 'calendar.php?key=' . rawurlencode((string)$key);
+    if ($type !== null) {
+      $link .= '&type=' . rawurlencode((string)$type);
+    }
+    if ($event !== null) {
+      $link .= '&event=' . rawurlencode((string)$event);
+    }
+    return $link;
+  }
+
+  # Normalize a day type / component name ("Final Exam" -> "final-exam") so that
+  # schedule entries always match the directory that holds their content.
+  function cal4_normalize_type($type) {
+    return str_replace(' ', '-', strtolower(trim((string)$type)));
+  }
+
+  # Human readable label for a normalized type ("final-exam" -> "final exam").
+  function cal4_type_label($type) {
+    return str_replace('-', ' ', (string)$type);
+  }
+
+  # Read a request value only if it is a plain string (arrays are rejected).
+  function cal4_request_string($name) {
+    if (isset($_REQUEST[$name]) && is_string($_REQUEST[$name])) {
+      return $_REQUEST[$name];
+    }
+    return null;
+  }
+
+  # Split one line of the access / virtual configuration files.
+  # Blank lines and lines starting with # are ignored (returns False).
+  # Fields are separated by tabs; if a line has no tabs, any whitespace is used
+  # (older files used spaces).  Tab separated lines may contain spaces in paths.
+  function cal4_config_fields($line) {
+    $line = trim($line);
+    if ($line === '' || substr($line, 0, 1) === '#') {
+      return False;
+    }
+    if (strpos($line, "\t") !== False) {
+      return array_values(array_filter(array_map('trim', preg_split('/\t+/', $line)), 'strlen'));
+    }
+    return preg_split('/\s+/', $line);
+  }
+
+  # Messages about configuration problems, shown to the instructor only.
+  $CONFIG_WARNINGS = array();
+
+  # Basic security headers
+  if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header("Content-Security-Policy: object-src 'none'; base-uri 'self'");
+  }
 
   # Determine what directories should be scanned for files.
   $COMPONENTS = array();
   foreach ($DOW as $i => $type) {
-    $type = str_replace(' ', '-', strtolower($type));
+    $type = cal4_normalize_type($type);
     $COMPONENTS[$type] = $type;
   }
   if (isset($OVERRIDE)) {
     foreach ($OVERRIDE as $i => $m) {
       foreach ($m as $d => $type) {
-        $type = str_replace(' ', '-', strtolower($type));
+        $type = cal4_normalize_type($type);
         $COMPONENTS[$type] = $type;
       }
     }
   }
   if (isset($COMBINE)) {
     foreach ($COMBINE as $type => $cset) {
+      $type = cal4_normalize_type($type);
       $COMPONENTS[$type] = $type;
       foreach ($cset as $day => $inside) {
         foreach ($inside as $ntype) {
+          $ntype = cal4_normalize_type($ntype);
           $COMPONENTS[$ntype] = $ntype;
         }
       }
     }
+  }
+
+  # Validate the request parameters that select content.
+  #  - event must be a positive integer written plainly (no "02", "2.0", "2 ")
+  #  - type must be one of the configured components
+  #  - key must be a sha1 hex string
+  # Anything else is discarded, which falls back to the home page.
+  $cal4_bad_request = False;
+  if (isset($_REQUEST['event'])) {
+    $ev = cal4_request_string('event');
+    if ($ev === null || !preg_match('/^[1-9][0-9]{0,5}$/', $ev)) {
+      $cal4_bad_request = True;
+    } else {
+      $_REQUEST['event'] = intval($ev);
+    }
+  }
+  if (isset($_REQUEST['type'])) {
+    $ty = cal4_request_string('type');
+    if ($ty === null || !isset($COMPONENTS[$ty])) {
+      $cal4_bad_request = True;
+    }
+  }
+  if (isset($_REQUEST['key'])) {
+    $ky = cal4_request_string('key');
+    if ($ky === null || !preg_match('/^[0-9a-f]{40}$/', $ky)) {
+      $cal4_bad_request = True;
+    }
+  }
+  if ($cal4_bad_request) {
+    unset($_REQUEST['event'], $_REQUEST['type'], $_REQUEST['key'], $_REQUEST['edit'], $_REQUEST['editor']);
+  }
+  foreach (array('show', 'load', 'search', 'keyword', 'lock', 'password', 'edit', 'editor', 'answers', 'navbaronly', 'csrf') as $cal4_param) {
+    if (isset($_REQUEST[$cal4_param]) && !is_string($_REQUEST[$cal4_param])) {
+      unset($_REQUEST[$cal4_param]);
+    }
+  }
+
+  # Refuse to run with the publicly known sample secret, it is used to build
+  # file keys and authentication tokens.
+  define('CAL4_SAMPLE_SECRET', 'A really long phrase that should be impossible to guess, you dont need to remember this...');
+  if (!isset($SECRET) || !is_string($SECRET) || $SECRET === '' || $SECRET === CAL4_SAMPLE_SECRET) {
+    unset($_REQUEST['event'], $_REQUEST['type'], $_REQUEST['key'], $_REQUEST['show']);
+    $PAGE_MODIFY['error'] = 'The calendar has not been configured with a private $SECRET.';
+    $PAGE_MODIFY['error-comment'] = 'Edit calendar.php and set $SECRET to a long random value, for example the output of: php -r \'echo bin2hex(random_bytes(32));\'';
+    $_REQUEST['load'] = 'error';
+    $SECRET = 'cal4-unconfigured-' . bin2hex(random_bytes(16));
+  } elseif (strlen($SECRET) < 32 || preg_match('/impossible to guess -?\d{0,5}, you dont need/', $SECRET)) {
+    $CONFIG_WARNINGS[] = 'The $SECRET in calendar.php is weak (short, or the old installer default with a small random number). Replace it with a long random value such as the output of: php -r \'echo bin2hex(random_bytes(32));\'';
   }
 
   # Load in the configuration for all virtual files
@@ -42,14 +155,20 @@
       $_REQUEST['load'] = 'error';
     } else {
       $vdata = file($CLASS_FILE);
-      foreach($vdata as $line) {
-        $line = trim($line);
-        $line = preg_split('/\s+/', $line);
-        if (count($line) == 4) {
+      foreach($vdata as $lineno => $rawline) {
+        $line = cal4_config_fields($rawline);
+        if ($line === False) {
+          continue;
+        }
+        if (count($line) == 4 && preg_match('/^[1-9][0-9]*$/', $line[3])) {
+          $line[2] = cal4_normalize_type($line[2]);
+          $line[3] = intval($line[3]);
           if (!isset($virtual[$line[2]][$line[3]])) {
             $virtual[$line[2]][$line[3]] = array();
           }
           $virtual[$line[2]][$line[3]][] = array($line[0], $line[1]);
+        } else {
+          $CONFIG_WARNINGS[] = "Ignored line " . ($lineno + 1) . " of $CLASS_FILE (expected: virtual-name, real-file, component, event-number): " . trim($rawline);
         }
       }
     }
@@ -71,48 +190,54 @@
       $_REQUEST['load'] = 'error';
     } else {
       $vdata = file($ACCESS_FILE);
-      foreach($vdata as $line) {
-        $line = trim($line);
-        $line = preg_split('/\s+/', $line);
-        if (count($line) == 2 && (strpos($line[1], '-') === 0 || strpos($line[1], '+') === 0)) {
-          $access[$line[0]] = array('month'=>1, 'day'=>1, 'year'=>1, 'dynamic'=> $line[1]);
-        } elseif (count($line) == 3) {
+      $cal4_dayname = '(mon|tue|tues|wed|thu|thur|thurs|fri|sat|sun|monday|tuesday|wednesday|thursday|friday|saturday|sunday)';
+      foreach($vdata as $lineno => $rawline) {
+        $line = cal4_config_fields($rawline);
+        if ($line === False) {
+          continue;
+        }
+        if (count($line) == 2 && preg_match('/^[+-]([0-9]{1,4}|' . $cal4_dayname . ')$/i', $line[1])) {
+          $access[$line[0]] = array('month'=>1, 'day'=>1, 'year'=>1, 'dynamic'=> strtolower($line[1]));
+        } elseif (count($line) == 3 && ctype_digit($line[1]) && ctype_digit($line[2])) {
           $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>$YEAR, 'dynamic'=>'');
-        } elseif (count($line) == 4) {
+        } elseif (count($line) == 4 && ctype_digit($line[1]) && ctype_digit($line[2]) && ctype_digit($line[3])) {
           $access[$line[0]] = array('month'=> intval($line[1]), 'day'=> intval($line[2]), 'year'=>intval($line[3]), 'dynamic'=>'');
+        } else {
+          $CONFIG_WARNINGS[] = "Ignored line " . ($lineno + 1) . " of $ACCESS_FILE (expected: name month day [year], or name +N / -N / +dayname / -dayname): " . trim($rawline);
         }
       }
     }
   }
 
-  # Validate a filename to see if is using the legacy security format
-  # which was filename.month.day.extension,
-  # This is a rather old concept that should be removed!!!!
-  # Returns array(VisibleInGeneral, VisibleOnCalendar, Year, Month, Day)
-  function validate_file($instructor, $filename, $filewithpath, $access) {
-    $dynamic = '';
-    if (is_dir($filewithpath)) {
-      return array(False, False, 1, 1, 1, '', $dynamic);
+  # Basic file record used by the scanner.  Date based visibility is decided
+  # later by get_file_security() using the access file.  (The legacy
+  # filename.month.day.extension naming convention is no longer supported.)
+  # Returns array(Exists, Visible, Year, Month, Day, CategoryName, Dynamic)
+  function validate_file($filename, $filewithpath) {
+    if (!is_file($filewithpath)) {
+      return array(False, False, 1, 1, 1, '', '');
     }
-    $today = getdate();
-    $open_year = $today['year'];
-    $open_month = 1;
-    $open_day = 1;
-    $cat_file = $filename;
-    if (True) {
-      $cp = array_reverse(explode('.', basename($filewithpath)));
-      if (count($cp) > 3 && is_numeric($cp[1]) && is_numeric($cp[2])) {
-        $open_day = intval($cp[1]);
-        $open_month = intval($cp[2]);
-        $cat_file = $cp[3] . '.' . $cp[0];
+    return array(True, True, 1, 1, 1, $filename, '');
+  }
+
+  # Is $path (already resolved with realpath) inside one of the allowed roots?
+  function cal4_path_allowed($path, $roots) {
+    foreach ($roots as $root) {
+      if ($path === $root || strpos($path, rtrim($root, '/') . '/') === 0) {
+        return True;
       }
     }
-    return array(True, True, $open_year, $open_month, $open_day, $cat_file, $dynamic);
+    return False;
+  }
+
+  # True if any segment of a relative path is hidden (starts with a dot).
+  function cal4_is_hidden_path($relpath) {
+    return preg_match('#(^|/)\.#', $relpath) === 1;
   }
 
   # Determine what type of category the file is
   # types = html, link, src, txt, powerpoint, pdf (aka the extension!)
-  function categorize_file($instructor, $filename, $filewithpath, $filereduced, $categories) {
+  function categorize_file($filename, $filereduced, $categories) {
     $mytype = '';
     $myboxblock = '';
     if (isset($categories[$filereduced])) {
@@ -135,71 +260,66 @@
 
   # Retrieve a list of directories and their files, that are sourced from the
   # content directories.  Files will be validated for access
-  function get_files($instructor=False, $sources=array('class', 'lab', 'project', 'exam', 'review', 'capstone', 'continued-lab'), $file_path = '.', $access=array(), $virtual=array(), $categories=array(), $secret='really') {
+  # $allowed_roots: absolute directories that files (and symlink targets) must
+  # live in; defaults to the course directory itself.
+  function get_files($sources=array('class', 'lab', 'project', 'exam', 'review', 'capstone', 'continued-lab'), $file_path = '.', $virtual=array(), $categories=array(), $secret='really', $allowed_roots=array()) {
     $results = array();
+    if (empty($allowed_roots)) {
+      $allowed_roots = array(realpath($file_path));
+    }
     $basedir = scandir($file_path);
     foreach ($sources as $i => $l0) {
       if (in_array($l0, $basedir) && is_dir($file_path . '/' . $l0)) {
         $level1 = scandir($file_path . '/' . $l0);
-        sort($level1);
+        # Natural order, so 1.Intro, 2.Loops, 10.Review number as 1, 2, 3.
+        sort($level1, SORT_NATURAL);
         foreach ($level1 as $i => $l1) {
           if (substr($l1, 0, 1) != '.' && is_dir($file_path . '/' . $l0 . '/' . $l1)) {
             // The following code allows the system recursively look through the Directory
             // structure within a class, and the system can now process RELATIVE links
             // that go into those subordinate directories
+            $prefix = $file_path . '/' . $l0 . '/' . $l1 . '/';
             $level2 = array();
             try {
               $Iterator = new RecursiveIteratorIterator(
-                new RecursiveDirectoryIterator($file_path . '/' . $l0 . '/' . $l1),
+                new RecursiveDirectoryIterator($prefix, FilesystemIterator::SKIP_DOTS),
                 RecursiveIteratorIterator::LEAVES_ONLY,
                 RecursiveIteratorIterator::CATCH_GET_CHILD);
               foreach($Iterator as $name => $object) {
-                $name = explode("/", $name);
-                unset($name[2]);
-                unset($name[1]);
-                unset($name[0]);
-                $name = implode("/", $name);
-                $level2[] = $name;
+                $level2[] = substr($name, strlen($prefix));
               }
             } catch (Exception $e) {
             // Unable to recurse, so don't bother...
             }
-            // $level2 = scandir($file_path . '/' . $l0 . '/' . $l1);
             $results[$l0][$l1] = array();
             sort($level2);
             foreach ($level2 as $i => $l2) {
-              $key = sha1($secret.$l0.$l1.$l2);
-              if (substr($l2, 0, 1) != '.' && ancient(validate_file($instructor, $l2, $file_path . '/' . $l0 . '/' . $l1 . '/' . $l2, $access), 0)) {
-                if (is_link($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2)) {
-                  if (validate_file($instructor, readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), ancient(readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), $access),0)) {
-                    $vf = validate_file($instructor, readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), $access);
-                    $category = categorize_file($instructor, $l2, readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2), $vf[5], $categories);
-                    $results[$l0][$l1][$l2] = array('actual' => $file_path . '/' . $l0 . '/' . $l1 . '/' . readlink($file_path . '/' . $l0 . '/' . $l1 . '/' . $l2),
-                                                    'visible' => $vf[1],
-                                                    'year' => $vf[2],
-                                                    'month' => $vf[3],
-                                                    'day' => $vf[4],
-                                                    'dynamic' => $vf[6],
-                                                    'type' => $category[0],
-                                                    'category' => $category[1],
-                                                    'key' => $key,
-                                                    'filename' => $l2);
-                  }
-                } else {
-                  $vf = validate_file($instructor, $l2, $file_path . '/' . $l0 . '/' . $l1 . '/' . $l2, $access);
-                  $category = categorize_file($instructor, $l2, $file_path . '/' . $l0 . '/' . $l1 . '/' . $l2, $vf[5], $categories);
-                  $results[$l0][$l1][$l2] = array('actual' => $file_path . '/' . $l0 . '/' . $l1 . '/' . $l2,
-                                                  'visible' => $vf[1],
-                                                  'year' => $vf[2],
-                                                  'month' => $vf[3],
-                                                  'day' => $vf[4],
-                                                  'dynamic' => $vf[6],
-                                                  'type' => $category[0],
-                                                  'category' => $category[1],
-                                                  'key' => $key,
-                                                  'filename' => $l2);
-                }
+              if ($l2 === '' || $l2 === False || cal4_is_hidden_path($l2)) {
+                continue;
               }
+              $full = $prefix . $l2;
+              # Resolve symbolic links and make sure the target stays inside
+              # the allowed directories.
+              $real = realpath($full);
+              if ($real === False || !cal4_path_allowed($real, $allowed_roots)) {
+                continue;
+              }
+              $vf = validate_file($l2, $real);
+              if (!$vf[0]) {
+                continue;
+              }
+              $key = sha1($secret.$l0.$l1.$l2);
+              $category = categorize_file($l2, $vf[5], $categories);
+              $results[$l0][$l1][$l2] = array('actual' => is_link($full) ? $real : $full,
+                                              'visible' => $vf[1],
+                                              'year' => $vf[2],
+                                              'month' => $vf[3],
+                                              'day' => $vf[4],
+                                              'dynamic' => $vf[6],
+                                              'type' => $category[0],
+                                              'category' => $category[1],
+                                              'key' => $key,
+                                              'filename' => $l2);
             }
           }
         }
@@ -214,10 +334,11 @@
             foreach ($l2array as $i => $values) {
               $virt_file = $values[0];
               $real_file = $values[1];
-              if (ancient(validate_file($instructor, $real_file, $real_file, $access),0)) {
+              $real = realpath($real_file);
+              if ($real !== False && cal4_path_allowed($real, $allowed_roots) && ancient(validate_file($real_file, $real), 0)) {
                 $key = sha1($secret.$real_file.$virt_file);
-                $vf = validate_file($instructor, $real_file, $real_file, $access);
-                $category = categorize_file($instructor, $virt_file, $real_file, $vf[5], $categories);
+                $vf = validate_file($real_file, $real);
+                $category = categorize_file($virt_file, $vf[5], $categories);
                 $results[$l0][$classes[$day-1]][$virt_file] = array('actual' => $real_file,
                                                                     'visible' => $vf[1],
                                                                     'year' => $vf[2],
@@ -290,7 +411,7 @@
               $diffDay = new DateInterval("P".$delta."D");
               $d0->sub($diffDay);
             } else {
-              if (strtoupper($d0->format('l')) != strtoupper($delta)) {
+              if (strtolower(substr($d0->format('l'), 0, 3)) != strtolower(substr($delta, 0, 3))) {
                 $d0->modify('last '.$delta);
               }
             }
@@ -322,6 +443,25 @@
   function calendar_events($events, $YEAR, $MONTH_START, $DAY_START, $WEEKENDS, $MONTH_END, $DOW, $OVERRIDE, $BOX, $COMBINE=array()) {
     $results = array('year'=>$YEAR, 'month_start'=>$MONTH_START, 'month_end'=>$MONTH_END, 'box'=>$BOX);
     $results_counter = array();
+    # Normalize all schedule types so they match the component directories
+    # (for example 'Final Exam' is stored in the final-exam directory).
+    if (!is_array($OVERRIDE)) { $OVERRIDE = array(); }
+    if (!is_array($COMBINE)) { $COMBINE = array(); }
+    foreach ($DOW as $k => $v) {
+      $DOW[$k] = cal4_normalize_type($v);
+    }
+    foreach ($OVERRIDE as $m => $days) {
+      foreach ($days as $d => $v) {
+        $OVERRIDE[$m][$d] = cal4_normalize_type($v);
+      }
+    }
+    $ncombine = array();
+    foreach ($COMBINE as $ctype => $cset) {
+      foreach ($cset as $cnum => $inside) {
+        $ncombine[cal4_normalize_type($ctype)][$cnum] = array_map('cal4_normalize_type', $inside);
+      }
+    }
+    $COMBINE = $ncombine;
     $POSDOW = array(0 => 'sun', 1 => 'mon', 2 => 'tue', 3 => 'wed', 4 => 'thu', 5 => 'fri', 6 => 'sat', 7 => 'sun');
     ## Lets walk through all possible months...
     for($month=$MONTH_START; $month <= $MONTH_END; $month++) {
@@ -411,7 +551,7 @@
       $events[$cat] = array();
       $counter = 1;
       foreach ($catarray as $event => $earray) {
-        $cevent = explode('.', $event);
+        $cevent = explode('.', $event, 2);
         if (count($cevent) > 1) {
           $cevent = $cevent[1];
         } else {
@@ -504,24 +644,37 @@
     $LOGON_TIME = 43200;
   }
 
+  # Cookies: HttpOnly, SameSite=Lax, and Secure when served over HTTPS.
+  function cal4_is_https() {
+    return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (isset($_SERVER['SERVER_PORT']) && $_SERVER['SERVER_PORT'] == 443);
+  }
+  function cal4_setcookie($name, $value, $expires) {
+    if (headers_sent()) { return False; }
+    return setcookie($name, $value, array('expires' => $expires, 'path' => '', 'secure' => cal4_is_https(), 'httponly' => True, 'samesite' => 'Lax'));
+  }
+
   # Perform Authentication
-  session_start();
+  if (session_status() !== PHP_SESSION_ACTIVE) {
+    session_set_cookie_params(array('httponly' => True, 'secure' => cal4_is_https(), 'samesite' => 'Lax'));
+    session_start();
+  }
+  $INSTRUCTOR = False;
   if ($ADMIN != '') {
     if (isset($_REQUEST['password']) && $_REQUEST['password'] == $ADMIN) {
       $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
-      setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
+      cal4_setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
       $_COOKIE["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
     } elseif (isset($_REQUEST['password'])
         && isset($_COOKIE["cal4-$COURSE-nonce"])
         && $_REQUEST['password'] == hash('sha256', $ADMIN.$_COOKIE["cal4-$COURSE-nonce"])) {
       $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
-      setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
+      cal4_setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
       $_COOKIE["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
     } elseif (isset($_REQUEST['password'])
         && isset($_SESSION["cal4-$COURSE-nonce"])
         && $_REQUEST['password'] == hash('sha256', $ADMIN.$_SESSION["cal4-$COURSE-nonce"])) {
       $_SESSION["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_SESSION["cal4-$COURSE-nonce"].session_id());
-      setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
+      cal4_setcookie("cal4-$COURSE", sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id()), time()+$LOGON_TIME);
       $_COOKIE["cal4-$COURSE"] = sha1($SECRET.$ADMIN.$COURSE.$_COOKIE["cal4-$COURSE-nonce"].session_id());
     } elseif (isset($_REQUEST['password']) && (isset($_SESSION["cal4-$COURSE"]) || isset($_COOKIE["cal4-$COURSE"]) )) {
       if (isset($_SESSION["cal4-$COURSE"])) {
@@ -529,7 +682,7 @@
       }
       if (isset($_COOKIE["cal4-$COURSE"])) {
         unset($_COOKIE["cal4-$COURSE"]);
-        setcookie("cal4-$COURSE", '', time()-3600);
+        cal4_setcookie("cal4-$COURSE", '', time()-3600);
       }
     }
 
@@ -544,7 +697,7 @@
     } else {
       $myNonce = hash('sha256',"{".rand()."-".rand()."}");
       $_SESSION["cal4-$COURSE-nonce"] = $myNonce;
-      setcookie("cal4-$COURSE-nonce", $myNonce, time()+$LOGON_TIME);
+      cal4_setcookie("cal4-$COURSE-nonce", $myNonce, time()+$LOGON_TIME);
       $_COOKIE["cal4-$COURSE-nonce"] = $myNonce;
     }
 
@@ -555,12 +708,27 @@
   }
 
   # Add a record of the visit to this page if $ACCESS_LOG is set
+  # Sensitive parameters (passwords, lock codes, editor contents, tokens) are
+  # removed before logging.  Keep the log outside of the web root.
   if (isset($ACCESS_LOG) && file_exists($ACCESS_LOG)) {
-    $URI = explode("?", $_SERVER['REQUEST_URI']);
-    if (isset($URI[1])) {
-      $URI = $URI[1];
+    $URI = explode("?", $_SERVER['REQUEST_URI'], 2);
+    if (isset($URI[1]) && $URI[1] !== '') {
+      parse_str($URI[1], $cal4_logq);
+      foreach (array('password', 'lock', 'editor', 'csrf') as $cal4_secretparam) {
+        if (isset($cal4_logq[$cal4_secretparam])) {
+          $cal4_logq[$cal4_secretparam] = 'REMOVED';
+        }
+      }
+      $URI = http_build_query($cal4_logq);
     } else {
       $URI = "home";
+    }
+    if (isset($_SERVER['DOCUMENT_ROOT']) && $_SERVER['DOCUMENT_ROOT'] !== '') {
+      $cal4_logreal = realpath($ACCESS_LOG);
+      $cal4_docroot = realpath($_SERVER['DOCUMENT_ROOT']);
+      if ($cal4_logreal !== False && $cal4_docroot !== False && strpos($cal4_logreal, rtrim($cal4_docroot, '/') . '/') === 0) {
+        $CONFIG_WARNINGS[] = 'The access log ($ACCESS_LOG) is inside the web root and may be downloadable. Move it outside of the web root.';
+      }
     }
     $fp = fopen($ACCESS_LOG, 'a');
     if ($fp) {
@@ -580,7 +748,18 @@
   }
 
   # Get accessibles files located within the various component directories
-  $files = get_files($INSTRUCTOR, array_keys($COMPONENTS), '.', $access, $virtual, $categories, $SECRET);
+  # Directories that content files (and symbolic link targets) may live in.
+  # By default only the course directory; add more with $ALLOWED_PATHS.
+  $cal4_roots = array(realpath('.'));
+  if (isset($ALLOWED_PATHS) && is_array($ALLOWED_PATHS)) {
+    foreach ($ALLOWED_PATHS as $cal4_ap) {
+      $cal4_apr = realpath($cal4_ap);
+      if ($cal4_apr !== False) {
+        $cal4_roots[] = $cal4_apr;
+      }
+    }
+  }
+  $files = get_files(array_keys($COMPONENTS), '.', $virtual, $categories, $SECRET, $cal4_roots);
 
   # Remove keys from memory, incase something goes wrong...  (such as embedded PHP)
   unset($ADMIN);
@@ -644,17 +823,36 @@
     }
   }
 
+  # Events that are not placed on any calendar day have no date to apply the
+  # access rules against, so students can not see any of their files.
+  if (!$INSTRUCTOR) {
+    foreach ($events as $etype => $elist) {
+      foreach ($elist as $enum => $edata) {
+        if (!isset($events_list['map'][$etype][$enum])) {
+          $events[$etype][$enum]['box'] = array();
+        }
+      }
+    }
+  }
+
   # Retrieve the other files in the specific lecture
   $other = array();
   if (isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($events[$_REQUEST['type']])) {
-    $other = array_keys($files[$_REQUEST['type']]);
-    $other = $files[$_REQUEST['type']][$other[$_REQUEST['event']-1]];
+    $other_names = array_keys($files[$_REQUEST['type']]);
+    if (isset($other_names[$_REQUEST['event']-1])) {
+      $other = $files[$_REQUEST['type']][$other_names[$_REQUEST['event']-1]];
+    }
     if (isset($events_list['map'][$_REQUEST['type']][$_REQUEST['event']])) {
       $month = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][0];
       $day = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][1];
     } else {
+      # Unmapped event: instructors see it (rules evaluated as of Dec 31),
+      # students see nothing.
       $month=12;
       $day=31;
+      if (!$INSTRUCTOR) {
+        $other = array();
+      }
     }
     # Verify Security of other files...
     foreach($other as $ibox => $iset) {
@@ -720,6 +918,14 @@
       $actual = $events[$_REQUEST['type']][$_REQUEST['event']]['box']['title']['actual'];
       $file_type = $events[$_REQUEST['type']][$_REQUEST['event']]['box']['title']['type'];
       $ext = pathinfo($actual, PATHINFO_EXTENSION);
+      # Access rules are enforced when a file is served: students only get the
+      # title file if it passed the security check for this event.
+      $title_name = $events[$_REQUEST['type']][$_REQUEST['event']]['box']['title']['filename'];
+      if (!$INSTRUCTOR && !isset($other[$title_name])) {
+        $actual = '';
+        $file_type = '?';
+        $ext = '?';
+      }
     }
 
     # If the source is not html, provide the unprocessed file
@@ -744,18 +950,27 @@
   }
 
   # Check to see if a web page is requested
-  # This will provide .html files in the root directory
+  # This will provide .html (or .pdf) files in the root directory, but only for
+  # pages on the allow-list.  Add your own pages with $LOAD_PAGES in calendar.php.
   if (isset($_REQUEST['load'])) {
-    $actual = $_REQUEST['load'].'.pdf';
-    if (file_exists(basename($actual))) {
-      provide_file(basename($actual));
-      die;
+    $cal4_load_pages = array('home', 'policy', 'resources', 'error', 'lock');
+    if (isset($LOAD_PAGES) && is_array($LOAD_PAGES)) {
+      $cal4_load_pages = array_merge($cal4_load_pages, $LOAD_PAGES);
     }
-    $actual = $_REQUEST['load'].'.html';
-    if (file_exists('calendar/'.$actual)) {
-      $contents = file_get_contents('calendar/'.basename($actual));
-    } elseif (file_exists(basename($actual))) {
-      $contents = file_get_contents(basename($actual));
+    if ($INSTRUCTOR) {
+      $cal4_load_pages[] = 'instructor';
+    }
+    $cal4_load = (string)$_REQUEST['load'];
+    if (preg_match('/^[A-Za-z0-9_-]+$/', $cal4_load) && in_array($cal4_load, $cal4_load_pages, True)) {
+      if (file_exists($cal4_load.'.pdf')) {
+        provide_file($cal4_load.'.pdf');
+        die;
+      }
+      if (file_exists('calendar/'.$cal4_load.'.html')) {
+        $contents = file_get_contents('calendar/'.$cal4_load.'.html');
+      } elseif (file_exists($cal4_load.'.html')) {
+        $contents = file_get_contents($cal4_load.'.html');
+      }
     }
   }
 
@@ -798,13 +1013,7 @@
 
     # Replace image <img src>, <source src= />,  and anchor <a href> links with the key'd version of the file
     foreach ($other as $fn => $value) {
-      $link = "calendar.php?key=". strip_tags($value['key']);
-      if (isset($_REQUEST['type'])) {
-        $link .= '&type=' . strip_tags($_REQUEST['type']);
-      }
-      if (isset($_REQUEST['event'])) {
-        $link .= '&event=' . strip_tags($_REQUEST['event']);
-      }
+      $link = cal4_file_link($value['key'], isset($_REQUEST['type']) ? $_REQUEST['type'] : null, isset($_REQUEST['event']) ? $_REQUEST['event'] : null);
       $contents = str_ireplace('<img src="'.$fn.'"', '<img src="'.$link.'"', $contents);
       $contents = str_ireplace("<img src='".$fn."'", "<img src='".$link."'", $contents);
       $contents = str_ireplace('<source src="'.$fn.'"', '<source src="'.$link.'"', $contents);
@@ -822,9 +1031,7 @@
       preg_match_all('/value=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
       $tag_src = substr($tag_src[1][0],1,-1);
       if ($tag_src != "" && isset($PAGE_MODIFY[$tag_src])) {
-        $inject_data = $PAGE_MODIFY[$tag_src];
-        $inject_data = str_ireplace('<', '&lt;', $inject_data);
-        $inject_data = str_ireplace('>', '&gt;', $inject_data);
+        $inject_data = htmlspecialchars((string)$PAGE_MODIFY[$tag_src], ENT_QUOTES | ENT_HTML5, 'UTF-8', False);
         $contents = str_ireplace('<replace value="'.$tag_src.'">', $inject_data, $contents);
         $contents = str_ireplace("<replace value='$tag_src'>", $inject_data, $contents);
         $contents = str_ireplace('<replace value="'.$tag_src.'"/>', $inject_data, $contents);
@@ -881,47 +1088,25 @@
   # Uses the new tag <postmeeting>
   # The time to reveal is from the $REVEALHOUR variable located in calendar.php
 
-  if ((!isset($INSTRUCTOR) || !$INSTRUCTOR) && isset($REVEALHOUR)) {
-      $today_date_time = getdate();
-      if (
-            ($today_date_time['year'] > $YEAR)
-         ||
-         (
-            ($today_date_time['year'] >= $YEAR)
-            &&
-            ($today_date_time['mon'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
-         )
-         ||
-         (
-            ($today_date_time['year'] == $YEAR)
-            &&
-            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
-            &&
-            ($today_date_time['mday'] > $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
-         )
-         ||
-         (
-            ($today_date_time['year'] == $YEAR)
-            &&
-            ($today_date_time['mon'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][0])
-            &&
-            ($today_date_time['mday'] == $events_list[map][$_REQUEST['type']][$_REQUEST['event']][1])
-            &&
-            ($today_date_time['hours'] >= $REVEALHOUR)
-          )
-         ){
-        #show the content
-        echo "Would show content";
-        $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '\1', $contents);
-      }
-      else {
-        #DO NOT show the content
-        $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '', $contents);
-      }
+  if (!$INSTRUCTOR && isset($REVEALHOUR)) {
+    $cal4_reveal = False;
+    if (isset($_REQUEST['type']) && isset($_REQUEST['event'])
+        && isset($events_list['map'][$_REQUEST['type']][$_REQUEST['event']])) {
+      $cal4_rmon = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][0];
+      $cal4_rday = $events_list['map'][$_REQUEST['type']][$_REQUEST['event']][1];
+      $cal4_reveal = (time() >= mktime(intval($REVEALHOUR), 0, 0, $cal4_rmon, $cal4_rday, $YEAR));
+    }
+    if ($cal4_reveal) {
+      # show the content
+      $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '\1', $contents);
+    } else {
+      # DO NOT show the content
+      $contents = preg_replace('/<postmeeting[^>]*>([\s\S]*?)<\/postmeeting[^>]*>/', '', $contents);
+    }
   }
 
   # Remove the contents of <inst>...</inst> tags if not logged on
-  if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
+  if (!$INSTRUCTOR) {
     $contents = preg_replace('/<inst[^>]*>([\s\S]*?)<\/inst[^>]*>/', '', $contents);
   }
   else {
@@ -932,13 +1117,14 @@
   # specified server (use $_SERVER['SERVER_NAME'])
   preg_match_all('/<host[^>]+>/i', $contents, $injects);
   foreach($injects[0] as $row => $inject_tag) {
-    preg_match_all('/server=("[^"]*")/i',$inject_tag, $tag_src);
-    $codes = str_replace('"','', $tag_src[1][0]);
-    $codes = str_replace("'",'', $codes);
-    $codes = explode(',', $codes);
+    preg_match_all('/server=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
+    if (!isset($tag_src[1][0])) {
+      continue;
+    }
+    $codes = explode(',', substr($tag_src[1][0], 1, -1));
     foreach($codes as $rowi => $thiscode) {
-      if ($_SERVER['SERVER_NAME'] == trim($thiscode) ||
-          $_SERVER['SERVER_ADDR'] == trim($thiscode) ) {
+      if ((isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] == trim($thiscode)) ||
+          (isset($_SERVER['SERVER_ADDR']) && $_SERVER['SERVER_ADDR'] == trim($thiscode))) {
         $contents = str_ireplace($injects[0][$row], '<unhost>', $contents);
       }
     }
@@ -952,18 +1138,19 @@
   if (isset($_SESSION['lock'])) {
     preg_match_all('/<lock[^>]+>/i', $contents, $injects);
     foreach($injects[0] as $row => $inject_tag) {
-      preg_match_all('/code=("[^"]*")/i',$inject_tag, $tag_src);
-      $codes = str_replace('"','', $tag_src[1][0]);
-      $codes = str_replace("'",'', $codes);
-      $codes = explode(',', $codes);
+      preg_match_all('/code=(\x27[^\x27]*\x27|\x22[^\x22]*\x22)/i',$inject_tag, $tag_src);
+      if (!isset($tag_src[1][0])) {
+        continue;
+      }
+      $codes = explode(',', substr($tag_src[1][0], 1, -1));
       foreach($codes as $rowi => $thiscode) {
-        if ($_SESSION['lock'] == trim($thiscode)) {
+        if (is_string($_SESSION['lock']) && trim($thiscode) !== '' && hash_equals(trim($thiscode), $_SESSION['lock'])) {
           $contents = str_ireplace($injects[0][$row], '<unlock>', $contents);
         }
       }
     }
   }
-  if (!isset($INSTRUCTOR) || !$INSTRUCTOR) {
+  if (!$INSTRUCTOR) {
     $unlocker = '
 <div class="jumbotron">
 <form method=POST>
@@ -980,8 +1167,8 @@
   }
 
   # Search for student and instructor tags
-  $find_student = (strpos($contents, '<student>') > 0);
-  $find_instructor = (strpos($contents, '<inst>') > 0);
+  $find_student = (strpos($contents, '<student>') !== False);
+  $find_instructor = (strpos($contents, '<inst>') !== False);
 
   # Remove the contents of <student>...</student> tags if answers are to be hidden
   if (!isset($_REQUEST['answers'])) {
@@ -1002,45 +1189,20 @@
   $ace_scripts = "";
   preg_match_all("#<\s*?ace\b[^>]*>(.*?)</ace\b[^>]*>#s", $contents, $ace);
   for ($i = 0; $i < count($ace[0]); $i++) {
-    preg_match_all('/name=("[^"]*")/i',$ace[0][$i], $ace_name);
-    preg_match_all('/mode=("[^"]*")/i',$ace[0][$i], $ace_mode);
-    preg_match_all('/height=("[^"]*")/i',$ace[0][$i], $ace_height);
-    preg_match_all('/theme=("[^"]*")/i',$ace[0][$i], $ace_theme);
-    preg_match_all('/readonly=("[^"]*")/i',$ace[0][$i], $ace_readonly);
-    preg_match_all('/nolinenumbers=("[^"]*")/i',$ace[0][$i], $ace_nolinenumbers);
-    preg_match_all('/textwrap=("[^"]*")/i',$ace[0][$i], $ace_textwrap);
-    $ace_readonly_flag = '//';
-    if (isset($ace_readonly[1][0]) && (substr($ace_readonly[1][0],1,-1)=='true')) {
-      $ace_readonly_flag = '';
-    }
-    $ace_nolinenumbers_flag = '//'; #default is to have line numbers
-    if (isset($ace_nolinenumbers[1][0]) && (substr($ace_nolinenumbers[1][0],1,-1)=='true')) {
-      $ace_nolinenumbers_flag = '';
-    }
-    $ace_textwrap_flag = '//';
-    if (isset($ace_textwrap[1][0]) && (substr($ace_textwrap[1][0],1,-1)=='true')) {
-      $ace_textwrap_flag = '';
-    }
-    if (isset($ace_name[1][0])) {
-      $ace_name = substr($ace_name[1][0],1,-1);
-    } else {
-      $ace_name = "ace$i";
-    }
-    if (isset($ace_mode[1][0])) {
-      $ace_mode = substr($ace_mode[1][0],1,-1);
-    } else {
-      $ace_mode = "html_elixir";
-    }
-    if (isset($ace_height[1][0])) {
-      $ace_height = substr($ace_height[1][0],1,-1);
-    } else {
-      $ace_height = "48px";
-    }
-    if (isset($ace_theme[1][0])) {
-      $ace_theme = substr($ace_theme[1][0],1,-1);
-    } else {
-      $ace_theme = "tomorrow";
-    }
+    # Read one attribute value from the <ace> tag, or return the default.
+    $ace_attr = function ($attr, $default) use ($ace, $i) {
+      if (preg_match('/' . $attr . '=("[^"]*")/i', $ace[0][$i], $ace_match)) {
+        return substr($ace_match[1], 1, -1);
+      }
+      return $default;
+    };
+    $ace_readonly_flag = ($ace_attr('readonly', '') == 'true') ? '' : '//';
+    $ace_nolinenumbers_flag = ($ace_attr('nolinenumbers', '') == 'true') ? '' : '//'; #default is to have line numbers
+    $ace_textwrap_flag = ($ace_attr('textwrap', '') == 'true') ? '' : '//';
+    $ace_name = $ace_attr('name', "ace$i");
+    $ace_mode = $ace_attr('mode', "html_elixir");
+    $ace_height = $ace_attr('height', "48px");
+    $ace_theme = $ace_attr('theme', "tomorrow");
     $ace_magic = $ace[1][$i];
     $ace_magic = str_ireplace('<', '&lt;', $ace_magic);
     $ace_magic = str_ireplace('>', '&gt;', $ace_magic);
@@ -1073,22 +1235,22 @@ EOF;
   # of the associated value from $_REQUEST[value]
   preg_match_all('/<url[^>]+>/i', $contents, $injects);
   foreach($injects[0] as $row => $inject_tag) {
+    # The value is remembered in the session, so it carries over to later pages.
     preg_match_all('/value=("[^"]*")/i',$inject_tag, $tag_src);
     preg_match_all('/default=("[^"]*")/i',$inject_tag, $tag_default);
-    $tag_src = substr($tag_src[1][0],1,-1);
-    $tag_default = substr($tag_default[1][0],1,-1);
-    if ($tag_src != "" && isset($_REQUEST[$tag_src])) {
+    $tag_src = isset($tag_src[1][0]) ? substr($tag_src[1][0],1,-1) : '';
+    $tag_default = isset($tag_default[1][0]) ? substr($tag_default[1][0],1,-1) : '';
+    if ($tag_src != "" && isset($_REQUEST[$tag_src]) && is_string($_REQUEST[$tag_src])) {
       $inject_data = $_REQUEST[$tag_src];
       $_SESSION['cal4-data-'.$tag_src] = $_REQUEST[$tag_src];
-    } elseif (isset($_SESSION['cal4-data-'.$tag_src])) {
+    } elseif ($tag_src != "" && isset($_SESSION['cal4-data-'.$tag_src])) {
       $inject_data = $_SESSION['cal4-data-'.$tag_src];
     } else {
       $inject_data = $tag_default;
     }
-    $inject_data = str_ireplace('<', '&lt;', $inject_data);
-    $inject_data = str_ireplace('>', '&gt;', $inject_data);
-    $contents = str_ireplace('<url value="'.$tag_src.'" default="'.$tag_default.'">', $inject_data, $contents);
-    $contents = str_ireplace("<url value='$tag_src' default='$tag_default'>", $inject_data, $contents);
+    $inject_data = h($inject_data);
+    # Replace this exact tag (whatever attribute order or quoting was used).
+    $contents = str_replace($inject_tag, $inject_data, $contents);
   }
 
   ## Find any <a name> tags that are used to define anchors
@@ -1205,6 +1367,7 @@ EOF;
       $contents = $headerWarningMessage . $contents;
   }
 
+
   # What types of courses do you want to highlight
   # This is overridable in the calendar
   if (!isset($NAVBAR_DROPDOWNS)) {
@@ -1225,22 +1388,44 @@ EOF;
   echo '<!-- Begin providing the contents of the page -->'.PHP_EOL;
   echo '<div class="container">'.PHP_EOL;
 
+  # Show configuration problems to the instructor
+  if ($INSTRUCTOR && !empty($CONFIG_WARNINGS)) {
+    echo '<div class="cal4-config-warnings" style="color:red;"><b>Configuration warnings (only visible to the instructor):</b><ul>';
+    foreach ($CONFIG_WARNINGS as $cal4_w) {
+      echo '<li>' . h($cal4_w) . '</li>';
+    }
+    echo '</ul></div>'.PHP_EOL;
+  }
+
   # If requested only the navbar (so that contents can be revealed)
   if (isset($_REQUEST['navbaronly']) && !isset($_REQUEST['show'])) {
     $_REQUEST['show'] = 'calendar_file_selector';
   }
 
-  # If Edit mode was requested, lest view the file.
-  if (isset($_REQUEST['edit']) && isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($_REQUEST['key'])) {
+  # If Edit mode was requested, lets view the file (instructor only, html only).
+  if ($INSTRUCTOR && isset($_REQUEST['edit']) && isset($_REQUEST['event']) && isset($_REQUEST['type']) && isset($_REQUEST['key'])) {
     $_REQUEST['show'] = 'calendar_file_editor';
     $_REQUEST['navbaronly'] = true;
   }
 
-  # If a php script was requested run it (assuming its valid)
+  # If one of the calendar pages was requested, run it.  Only pages on this
+  # list can be included, and some of them are limited to the instructor.
   if (isset($_REQUEST['show'])) {
-    $actual = 'calendar/' . basename($_REQUEST['show']) . '.php';
-    if (file_exists($actual)) {
-      require_once($actual);
+    $cal4_show_pages = array('calendar_display' => False,
+                             'calendar_display_alt' => False,
+                             'calendar_display_dateless' => False,
+                             'calendar_search' => False,
+                             'calendar_keyword' => False,
+                             'calendar_file_selector' => True,
+                             'calendar_file_editor' => True);
+    # A custom calendar view named in $CALENDAR_TOOL is also allowed.
+    if (isset($CALENDAR_TOOL) && is_string($CALENDAR_TOOL) && preg_match('/^[A-Za-z0-9_-]+$/', $CALENDAR_TOOL)
+        && file_exists('calendar/' . $CALENDAR_TOOL . '.php') && !isset($cal4_show_pages[$CALENDAR_TOOL])) {
+      $cal4_show_pages[$CALENDAR_TOOL] = False;
+    }
+    $cal4_show = (string)$_REQUEST['show'];
+    if (isset($cal4_show_pages[$cal4_show]) && ($INSTRUCTOR || !$cal4_show_pages[$cal4_show])) {
+      require_once('calendar/' . $cal4_show . '.php');
     }
   }
 
@@ -1269,8 +1454,8 @@ EOF;
     } while (strlen($contents) > 0);
   }
 
-  # Debugging if desired
-  if ($INSTRUCTOR && isset($_REQUEST['debug'])) {
+  # Debugging if desired (requires $DEBUG_MODE = True in calendar.php)
+  if ($INSTRUCTOR && isset($DEBUG_MODE) && $DEBUG_MODE === True && isset($_REQUEST['debug'])) {
     print "<pre><code>";
     echo "INSTRUCTOR=$INSTRUCTOR <br>";
     echo "\$other=";
