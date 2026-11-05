@@ -82,7 +82,7 @@
           }
           echo "<div class='content-center-day'>";
           if (isset($events_list[$month][$day])) {
-            echo "<b class='calCore-cal-" . strtoupper($events_list[$month][$day]['type']) . "'>" . strtoupper($events_list[$month][$day]['type']) . ' ' . $events_list[$month][$day]['type_num'] . "</b><br>";
+            echo "<b class='calCore-cal-" . strtoupper($events_list[$month][$day]['type']) . "'>" . strtoupper(cal4_type_label($events_list[$month][$day]['type'])) . ' ' . $events_list[$month][$day]['type_num'] . "</b><br>";
             foreach($box as $i => $btype) {
               $btype_desc = ucwords(str_ireplace("-", " ", $btype));
               if (isset($events_list[$month][$day]['event']['box'][$btype])) {
@@ -133,7 +133,7 @@
             if (isset($events_list[$month][$day]['combine'])) {
               foreach ($events_list[$month][$day]['combine'] as $new_class => $new_eventsdata) {
                 echo "<br>";
-                echo "<b class='calCore-cal-" . strtoupper($new_eventsdata['type']) . "'>" . strtoupper($new_eventsdata['type']) . ' ' . $new_eventsdata['type_num'] . "</b><br>";
+                echo "<b class='calCore-cal-" . strtoupper($new_eventsdata['type']) . "'>" . strtoupper(cal4_type_label($new_eventsdata['type'])) . ' ' . $new_eventsdata['type_num'] . "</b><br>";
                 foreach($box as $i => $btype) {
                   $btype_desc = ucwords(str_ireplace("-", " ", $btype));
                   if (isset($new_eventsdata['event']['box'][$btype])) {

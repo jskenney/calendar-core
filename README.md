@@ -24,3 +24,11 @@ git submodule init
 git submodule update --init --recursive
 git submodule update --remote
 ```
+
+# Running the tests
+The regression tests build a small fixture course in a temporary directory, start PHP's
+built-in web server, and check the calendar over HTTP (they also fail on any PHP warning).
+Only the PHP CLI is needed:
+```
+php tests/run_tests.php
+```

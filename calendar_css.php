@@ -2,6 +2,11 @@
   if (!defined('CALENDAR_PATH')) {
     define('CALENDAR_PATH', '');
   }
+  if (!function_exists('h')) {
+    function h($value) {
+      return htmlspecialchars((string)$value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    }
+  }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,7 +52,7 @@
       if (isset($COURSE)) {
     ?>
     <script type="text/javascript">
-      var nonce = <?php echo json_encode($_SESSION["cal4-$COURSE-nonce"]); ?>;
+      var nonce = <?php echo json_encode(isset($_SESSION["cal4-$COURSE-nonce"]) ? $_SESSION["cal4-$COURSE-nonce"] : '', JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>;
     </script>
     <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/js/sha256.js"></script>
     <?php
@@ -94,10 +99,10 @@
     foreach ($CUSTOMCSS[$_REQUEST['type']] as $ck => $crow) {
       $cfilename = CALENDAR_PATH.$crow;
       if (file_exists($cfilename)) {
-        echo "    <link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+        echo "    <link href='".h($cfilename)."' rel='stylesheet'>".PHP_EOL;
       } else {
-        echo "    <!-- unable to find the file below from CUSTOMCSS ({$_REQUEST['type']}) variable:".PHP_EOL;
-        echo "         <link href='$cfilename' rel='stylesheet'>".PHP_EOL;
+        echo "    <!-- unable to find the file below from CUSTOMCSS (".h($_REQUEST['type']).") variable:".PHP_EOL;
+        echo "         <link href='".h($cfilename)."' rel='stylesheet'>".PHP_EOL;
         echo "    -->".PHP_EOL;
       }
     }
@@ -112,10 +117,10 @@
     foreach ($CUSTOMJS[$_REQUEST['type']] as $ck => $crow) {
       $cfilename = CALENDAR_PATH.$crow;
       if (file_exists($cfilename)) {
-        echo "    <script type='text/javascript' src='$cfilename'></script>".PHP_EOL;
+        echo "    <script type='text/javascript' src='".h($cfilename)."'></script>".PHP_EOL;
       } else {
-        echo "    <!-- unable to find the file below from CUSTOMJS ({$_REQUEST['type']}) variable:".PHP_EOL;
-        echo "         <script type='text/javascript' src='$cfilename'></script>".PHP_EOL;
+        echo "    <!-- unable to find the file below from CUSTOMJS (".h($_REQUEST['type']).") variable:".PHP_EOL;
+        echo "         <script type='text/javascript' src='".h($cfilename)."'></script>".PHP_EOL;
         echo "    -->".PHP_EOL;
       }
     }
@@ -133,7 +138,7 @@
     <!-- DataTables -->
     <script type="text/javascript" src="<?php echo CALENDAR_PATH; ?>calendar/datatables.net/datatables.min.js"></script>
 
-  <title><?php echo $PAGE_TITLE; ?></title>
+  <title><?php echo h($PAGE_TITLE); ?></title>
 
   </head>
   <body>

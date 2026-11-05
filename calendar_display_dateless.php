@@ -24,13 +24,13 @@
 
         if (isset($events_list[$month][$day]['event']['name'])) {
           $type_name = $events_list[$month][$day]['event']['name'];
-          ###echo "$month_name $day - " . ucfirst($type) . " $type_num - ";
+          ###echo "$month_name $day - " . ucwords(cal4_type_label($type)) . " $type_num - ";
           if ($today['year'] == $year && $today['mon'] == $month && $today['mday'] == $day) {
             $color = " bgcolor='#FFFEBD'";
           } else {
             $color = "";
           }
-          echo "<tr><td $color nowrap>" . ucfirst($type) . " $type_num</td><td>";
+          echo "<tr><td $color nowrap>" . ucwords(cal4_type_label($type)) . " $type_num</td><td>";
           if (isset($events_list[$month][$day]['event']['box']['title'])) {
             echo "<a href='calendar.php?type=$type&event=$type_num'>$type_name</a>";
           } else {
@@ -80,13 +80,13 @@
             $type_num = $new_eventsdata['type_num'];
 
             $type_name = $new_eventsdata['event']['name'];
-            ###echo "$month_name $day - " . ucfirst($type) . " $type_num - ";
+            ###echo "$month_name $day - " . ucwords(cal4_type_label($type)) . " $type_num - ";
             if ($today['year'] == $year && $today['mon'] == $month && $today['mday'] == $day) {
               $color = " bgcolor='#FFFEBD'";
             } else {
               $color = "";
             }
-            echo "<tr><td $color nowrap></td><td $color nowrap>" . ucfirst($type) . " $type_num</td><td>";
+            echo "<tr><td $color nowrap></td><td $color nowrap>" . ucwords(cal4_type_label($type)) . " $type_num</td><td>";
             if (isset($new_eventsdata['event']['box']['title'])) {
               echo "<a href='calendar.php?type=$type&event=$type_num'>$type_name</a>";
             } else {

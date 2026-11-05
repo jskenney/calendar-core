@@ -10,7 +10,7 @@
   }
 
   if (isset($_REQUEST['search'])) {
-    $key = strip_tags(urldecode($_REQUEST['search']));
+    $key = trim((string)$_REQUEST['search']);
   } else {
     $key = 'NONE-SPECIFIED';
   }
@@ -18,7 +18,7 @@
   $today = getdate();
 
   echo "<table class='table table-striped table-bordered' width=99%><tbody>";
-  echo "<tr><td bgcolor='#a7a7a7' colspan=4><font size=3em><b>Keyword Search (searching for <em><u>$key</u></em> across all web pages)</b></font></td></tr>";
+  echo "<tr><td bgcolor='#a7a7a7' colspan=4><font size=3em><b>Keyword Search (searching for <em><u>".h($key)."</u></em> across all web pages)</b></font></td></tr>";
   for ($month = $start; $month <= $stop; $month++) {
     $month_len = cal_days_in_month(CAL_GREGORIAN, $month, $year);
     $month_name = cal_info(0);
@@ -39,14 +39,14 @@
             $myfound = False;
             if (file_exists($actual)) {
               $mycontents = file_get_contents($actual);
-              preg_match_all("/$key/", $mycontents, $mynavbar_menus);
-              if (count($mynavbar_menus[0]) > 1) {
+              # Plain (case-insensitive) text search; the term is not a regex.
+              if ($key !== '' && stripos($mycontents, $key) !== False) {
                 $myfound = True;
               }
             }
 
             if ($myfound) {
-              echo "<tr><td $color nowrap>$month_name $day</td><td $color nowrap>" . ucfirst($type) . " $type_num</td><td>";
+              echo "<tr><td $color nowrap>$month_name $day</td><td $color nowrap>" . ucwords(cal4_type_label($type)) . " $type_num</td><td>";
               if (isset($events_list[$month][$day]['event']['box']['title'])) {
                 echo "<a href='calendar.php?type=$type&event=$type_num'>$type_name</a>";
               } else {
@@ -68,12 +68,12 @@
                       }
                     } else {
                       echo "(";
-                      $key = $events_list[$month][$day]['event']['box'][$btype]['key'];
+                      $fkey = $events_list[$month][$day]['event']['box'][$btype]['key'];
                       $ftype = $events_list[$month][$day]['event']['box'][$btype]['ftype'];
                       $fclass = $events_list[$month][$day]['event']['box'][$btype]['fclass'];
                       $fmon = $events_list[$month][$day]['event']['box'][$btype]['month'];
                       $fday = $events_list[$month][$day]['event']['box'][$btype]['day'];
-                      echo "<a href=calendar.php?key=$key&type=$ftype&event=$fclass>$btype_desc</a>";
+                      echo "<a href='".h(cal4_file_link($fkey, $ftype, $fclass))."'>$btype_desc</a>";
                       if ($today['mon'] < $fmon || ($today['mon'] == $fmon && $today['mday'] < $fday)) {
                         echo " <font color='purple'>($fmon/$fday)</font> ";
                       }

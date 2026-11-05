@@ -18,4 +18,6 @@ read -p "Enter a default password (ex. mypassword): " dpass
 sed -i "s|SI123|$dcourse|g" calendar.php
 sed -i "s|Applied Something|$ddesc|g" calendar.php
 sed -i "s|mypassword|$dpass|g" calendar.php
-sed -i "s|impossible to guess|impossible to guess $RANDOM|g" calendar.php
+# Generate a long random secret (used to build file keys and login tokens)
+NEWSECRET=$(php -r 'echo bin2hex(random_bytes(32));' 2>/dev/null || head -c 32 /dev/urandom | od -An -tx1 | tr -d ' \n')
+sed -i "s|^\([[:space:]]*\\\$SECRET = \).*;[[:space:]]*\$|\1'${NEWSECRET}';|" calendar.php
