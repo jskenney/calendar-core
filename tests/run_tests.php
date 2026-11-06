@@ -122,7 +122,9 @@ put("$root/class/01.Intro/sub/.secret.txt", "HIDDEN-NESTED");
 symlink("$outside/secret.txt", "$root/class/01.Intro/outside.txt");
 symlink("../02.Second/index.html", "$root/class/01.Intro/inside-link.html");
 // class 2: single search match, image, legacy-named homework
-put("$root/class/02.Second/index.html", "<h1>Second</h1> zzz once <img src=\"pic.png\">");
+put("$root/class/02.Second/index.html", "<h1>Second</h1> zzz once <img src=\"pic.png\"> <calphp src=\"script.php\">");
+put("$root/class/02.Second/script.php", "<?php \$dbpass = 'PHP-SOURCE-SECRET'; echo 'CALPHP-OUTPUT';");
+put("$root/class/02.Second/page.phtml", "<?php echo 'PHTML-SOURCE-SECRET';");
 put("$root/class/02.Second/pic.png", "PNG2");
 put("$root/class/02.Second/homework.12.31.html", "LEGACY-HOMEWORK");
 // class 3: hidden by the access file, and the name keeps everything after the first dot
@@ -436,6 +438,20 @@ check(strpos($r['body'], 'Do **problem 7**.') !== false, 'editor shows the Markd
 preg_match('/name="csrf" value="([0-9a-f]+)"/', $r['body'], $m);
 req("calendar.php?edit=1&navbaronly=1&key=$kmd&type=class&event=4", $teacher, array('editor' => 'Edited **md**', 'csrf' => isset($m[1]) ? $m[1] : ''));
 check(file_get_contents("$root/class/04.Markdown/homework.md") === 'Edited **md**', 'editor saves .md files');
+
+section('PHP source is never sent to students');
+$ks = key_for('class', '02.Second', 'script.php');
+$r = req("calendar.php?key=$ks&type=class&event=2", $student);
+check(strpos($r['body'], 'PHP-SOURCE-SECRET') === false && strpos($r['body'], '<?php') === false, 'student can not download .php source by key');
+check(stripos($r['headers'], 'Content-Disposition') === false, 'no download is offered to the student');
+$r = req("calendar.php?key=" . key_for('class', '02.Second', 'page.phtml') . "&type=class&event=2", $student);
+check(strpos($r['body'], 'PHTML-SOURCE-SECRET') === false, 'student can not download .phtml source');
+$r = req("calendar.php?key=$ks&type=class&event=2&navbaronly=1", $student);
+check(strpos($r['body'], 'PHP-SOURCE-SECRET') === false, 'navbaronly does not expose the source either');
+$r = req('calendar.php?type=class&event=2', $student);
+check(strpos($r['body'], 'CALPHP-OUTPUT') !== false && strpos($r['body'], 'PHP-SOURCE-SECRET') === false, '<calphp> still runs the script for students');
+$r = req("calendar.php?key=$ks&type=class&event=2", $teacher);
+check(strpos($r['body'], 'PHP-SOURCE-SECRET') !== false, 'instructor can still download the source');
 
 /* --------------------------------------------------------------- summary */
 echo "\n$passes passed, $failures failed\n";
