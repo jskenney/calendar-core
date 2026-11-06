@@ -1,7 +1,7 @@
 <?php
 
   # Calendar Version 4.6, J. Kenney 2015-2026
-  define('CALENDAR_VERSION', '4.6.20261105');
+  define('CALENDAR_VERSION', '4.6.20261106');
 
   # Markdown (.md) support
   require_once(__DIR__ . '/calendar_markdown.php');
@@ -14,6 +14,14 @@
   # Is this file name a Markdown file?
   function cal4_is_markdown($filename) {
     return strtolower(pathinfo((string)$filename, PATHINFO_EXTENSION)) === 'md';
+  }
+
+  # Server-side script files (PHP) are never sent to students as files: their
+  # source can contain code or credentials.  <calphp> still runs them, and
+  # <codeinject> can still show source the instructor chooses to display.
+  function cal4_is_server_script($filename) {
+    $ext = strtolower(pathinfo((string)$filename, PATHINFO_EXTENSION));
+    return in_array($ext, array('php', 'php3', 'php4', 'php5', 'php7', 'php8', 'phtml', 'phps', 'phar'), True);
   }
 
   # Escape a value for safe output inside HTML text or a quoted attribute.
@@ -949,6 +957,14 @@
         $file_type = '?';
         $ext = '?';
       }
+    }
+
+    # Students never receive the source of PHP files (treated like any file
+    # they are not allowed to see: nothing is shown).
+    if (!$INSTRUCTOR && $actual != '' && cal4_is_server_script($actual)) {
+      $actual = '';
+      $file_type = '?';
+      $ext = '?';
     }
 
     # If the source is not html (or markdown), provide the unprocessed file

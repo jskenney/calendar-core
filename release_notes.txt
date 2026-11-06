@@ -185,3 +185,9 @@
            (index.md, homework.md, ...); configure with $MD.  ## headings
            appear in the navbar menu ($MARKDOWN_MENU_LEVELS).  .md files work
            with <inject>, ?load= pages, search and the editor.
+20261106 - SECURITY: PHP files (.php, .phtml, .phar, ...) in a class directory
+           are no longer sent to students as downloads.  Before, anyone with
+           a file's key could read the source of a <calphp> script, including
+           any passwords in it.  <calphp> still runs the script for students,
+           <codeinject> can still show source on purpose, and the instructor
+           can still download the file.
